@@ -190,12 +190,12 @@ copper$DIST <- factor(copper$DIST)
 
 The interaction of 2 fixed effects must be fixed, the interaction of a fixed and a random effects must be random. 
 
-##Variable                          Fixed or random
-##COPPER (Control, Week1, Week2)    (F)---
-##PLATE (Block)                     (R)<--
-##DIST(1,2,3,4)                     (F)----
-##COPPER:DIST                       (F)<----
-##PLATE:COPPER:DIST (Residuals)     (R)<----
+> Variable                          Fixed or random
+> COPPER (Control, Week1, Week2)    (F)---
+> PLATE (Block)                     (R)<--
+> DIST(1,2,3,4)                     (F)----
+> COPPER:DIST                       (F)<----
+> PLATE:COPPER:DIST (Residuals)     (R)<----
 
 Explore the assumptions of normality and equal variance. We need to aggregate to the level of PLATE
 
