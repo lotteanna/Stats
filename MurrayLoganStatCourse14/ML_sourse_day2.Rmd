@@ -1,0 +1,723 @@
+
+Day 2
+=====================================
+**Linear Hierachical Models**
+
+This is a linear model with separete covariance structure per block, and has fixed and random effects
+
+```{r}
+curdies <- read.csv('curdies.csv',strip.white=T)
+head(curdies)
+curdies$SITE <-factor(curdies$SITE)
+ggplot(curdies, aes(y=DUGESIA,x=SEASON)) + geom_boxplot() + facet_wrap(~SITE)
+ggplot(curdies, aes(y=S4DUGES,x=SEASON)) + geom_boxplot() + facet_wrap(~SITE)
+ggplot(curdies, aes(y=S4DUGES,x=SEASON)) + geom_boxplot() 
+```
+
+When testing assumptions, you need to look at the scale of replecations. The latter plot is thus wrong, as it doesn't show the averages for the replicates
+
+```{r, include=FALSE}
+library('plyr', lib.loc="/Library/Frameworks/R.framework/Versions/3.0/Resources/library")
+```
+
+```{r}
+curdies.ag <- ddply(curdies, ~SEASON+SITE, numcolwise(mean))
+curdies.ag
+```
+
+This will break up the data in groups by SEASON and SITE, can be used for other functions as well, like median
+
+```{r}
+curdies.ag <- ddply(curdies, ~SEASON+SITE, numcolwise(median))
+curdies.ag
+```
+
+To compare untransformed and transformed data (accounting for the replications)
+
+```{r}
+ggplot(curdies.ag, aes(y=DUGESIA,x=SEASON)) + geom_boxplot() 
+ggplot(curdies.ag, aes(y=S4DUGES,x=SEASON)) + geom_boxplot() 
+```
+
+Now model using the linear mixed effects model
+```{r}
+curdies.lme <- lme(S4DUGES~SEASON,random=~1|SITE, data=curdies)
+```
+
+Main effect is SEASON. By the `random=~1|SITE` part we are accounting for the non-indepence within SITE. It is allowing for random intercept (estimating a seperate mean for each site)
+
+Note that the old function 'lmer' is NOT able to incorporate autocorrelation!
+
+Another option is a random slope model
+
+```{r}
+curdies.lme1 <- lme(S4DUGES~SEASON,random=~SEASON|SITE, data=curdies)
+```
+
+This one allows the intercept AND the slope to be random! This means that not only can the sites have different means, also, we are allowing the difference between season to be different between site. What we are interested in is the **overal** difference between season, not the site difference.
+
+What you should do is try to run both versions (random intercept and random slope model) and test which one is better using the AIC. 
+
+```{r}
+AIC(curdies.lme,curdies.lme1)
+anova(curdies.lme,curdies.lme1)
+```
+
+Next step is to validate the model.
+
+```{r}
+plot(curdies.lme)
+summary(curdies.lme)
+```
+
+`StdDev:  0.04008595 0.3896804`, here `0.04008595` is the variability between sites, and `0.3896804` is the variability between logs.
+Intercept here is the **average** intercept (which is the summer mean as being alphabetically first).
+SEASONWINTER -0.707 is the correlation between the slopes of the intercepts. In continuous data we can solve this by centering the data, but this is not possible for a categorical dataset like this one. 
+
+```{r}
+anova(curdies.lme)
+```
+
+We *don't* know what amount degrees of freedom we can use in this test. For this reason, the p-values in this test **don't mean anything!**. A smaller p-value only means that we have used a larger sample size. What we want to know is if there is an effect and the magnitude of that effect.
+
+```{r}
+intervals(curdies.lme)
+```
+
+```{r}
+VarCorr(curdies.lme)
+```
+
+From this table, we can calculate the percentage of variability that is explained by site and small scale:
+
+```{r}
+c(0.04009,0.3897)/sum(c(0.04009,0.3897))
+```
+
+So only 10% of the variation in the data is explained by site. 
+
+```{r}
+newdata <-data.frame(SEASON=levels(curdies$SEASON))
+newdata
+```
+
+Now we're asking for the coefficient fixed effects, which we need to repopulation the data
+```{r}
+coefs <-fixef(curdies.lme)
+```
+
+Now we generate a model matrix for our newdata.
+
+```{r}
+xmat <-model.matrix (~SEASON,data=newdata)
+xmat
+```
+
+Now we can estimate the predicted values.
+
+```{r}
+fit <-t(coefs %*% t(xmat))
+fit
+```
+
+However, this doesn't give use the standard errors. We get them as follows:
+
+```{r}
+SE <- sqrt(diag(xmat %*% vcov(curdies.lme) %*% t(xmat)))
+```
+
+Finally, we want to turn these standarn errors into confidence intervals
+
+```{r}
+ci <-qt(0.975,length(curdies$SEASON)-2)*SE
+newdata<-cbind(newdata,data.frame(fit=fit, se=SE, lower=fit-ci,upper=fit+ci))
+head(newdata)
+ggplot(newdata,aes(y=fit,x=SEASON)) + geom_point() + 
+  geom_errorbar(aes(ymin=lower,ymax=upper),width=0)+
+  theme_classic()
+```
+
+------------------------------------
+**Randomized block and repeated measures designs**
+
+```{r}
+tobacco <- read.csv('tobacco.csv',strip.white=T)
+head(tobacco)
+```
+
+First step is to explore the assumptions of normality and equal variance. Here we don't need to do aggregations, as the treatments are the actual replicates (not nested)
+
+```{r}
+ggplot(tobacco, aes(y=NUMBER,x=TREATMENT)) + geom_boxplot() 
+```
+
+We do have outliers, but that is because the dataset is smaller (the smaller the dataset, the more outliers). 
+So no problems there, but we do have dependence. So we need to run a model with leaf as a random effect
+
+```{r}
+tobacco.lme <- lme(NUMBER~TREATMENT,random=~1|LEAF,data=tobacco)
+tobacco.lme1 <- lme(NUMBER~TREATMENT,random=~TREATMENT|LEAF,data=tobacco)
+AICc(tobacco.lme,tobacco.lme1)
+anova(tobacco.lme,tobacco.lme1)
+```
+
+So the first model is the best one, so no need to include a random slope. 
+
+Next we're going to check for normality and homogeneity of variance by plotting the residuals
+
+```{r}
+plot(tobacco.lme)
+```
+
+Residuals are centered around 0, there is no wedge and no pattern. So that is all fine.
+
+So now we can look at the effect of the model
+```{r}
+summary(tobacco.lme)
+```
+
+`(Intercept)   34.94013  1.873988  7 18.644800  0.0000` shows that 'Strong' has a mean of 34.9, and `TREATMENTWeak -7.87938  1.901462  7 -4.143855  0.0043` shows 'Weak' has a mean of 7.9 less than the average of strong.  
+
+------------------
+Next is split-plot design
+
+```{r}
+copper <- read.csv('copper.csv',strip.white=T)
+head(copper)
+copper$PLATE <- factor(copper$PLATE)
+copper$DIST <- factor(copper$DIST)
+```
+
+The interaction of 2 fixed effects must be fixed, the interaction of a fixed and a random effects must be random. 
+
+##Variable                          Fixed or random
+##COPPER (Control, Week1, Week2)    (F)---
+##PLATE (Block)                     (R)<--
+##DIST(1,2,3,4)                     (F)----
+##COPPER:DIST                       (F)<----
+##PLATE:COPPER:DIST (Residuals)     (R)<----
+
+Explore the assumptions of normality and equal variance. We need to aggregate to the level of PLATE
+
+```{r}
+copper.ag <- ddply(copper, ~COPPER+PLATE, numcolwise(mean))
+copper.ag
+ggplot(copper.ag, aes(y=WORMS,x=COPPER)) + geom_boxplot() 
+```
+
+There seems to be a small issue with a reduction in the distribution for copper treatments, but we first need to check the interaction between COPPER and DIST. For this we can just use the raw data.
+
+```{r}
+ggplot(copper, aes(y=WORMS,x=DIST)) + geom_boxplot() + facet_wrap(~COPPER)
+```
+
+Or
+
+```{r}
+ggplot(copper, aes(y=WORMS,x=DIST,color=COPPER)) + geom_boxplot() +
+  theme_classic()
+```
+
+Let's look at the data with and without transformation 
+```{r}
+g1<-ggplot(copper, aes(y=WORMS,x=DIST,color=COPPER)) + geom_boxplot() +
+  scale_color_discrete(guide=FALSE) +
+  theme_classic()
+g2<-ggplot(copper, aes(y=WORMS,x=DIST,color=COPPER)) + geom_boxplot() +
+  scale_y_sqrt()+ theme_classic() +
+  theme(legend.position=c(1,0),legend.justification=c(1,0))
+```
+
+The second plot has a sqrt transformation of the y-axes
+
+Now put multiple panels together
+```{r}
+grid.arrange(g1,g2,ncol=2)
+```
+
+The transformation doesn't seem to be too much better
+
+Now we need to fit the model
+
+```{r}
+copper.lme<-lme(WORMS~DIST*COPPER, random=~1|PLATE, data=copper)
+```
+
+But! We might have to account for correlation structure
+```{r}
+copper.lme1<-lme(WORMS~DIST*COPPER, random=~1|PLATE, data=copper,correlation=corCompSymm(form=~1|PLATE))
+```
+
+`=corCompSymm(form=~1|PLATE))` specifies that we want a separate corralation structure per plate
+
+We can achieve the same by updating the first model
+
+```{r}
+copper.lme1<-update(copper.lme, correlation=corCompSymm(form=~1|PLATE))
+```
+
+Which one is better?
+
+```{r}
+AICc(copper.lme,copper.lme1)
+anova(copper.lme,copper.lme1)
+```
+
+And test for auto-regressive correlation structure
+```{r}
+copper.lme2<-update(copper.lme,
+                    correlation=corAR1(form=~1|PLATE))
+```
+
+```{r}
+AICc(copper.lme1,copper.lme2)
+anova(copper.lme1,copper.lme2)
+```
+
+**This is why we need to use lme instead of lmer**, because the second one can't adjust for spatial or temporal autocorrelation
+
+Make another column where distance is numeric and not categorical
+```{r}
+copper$iDIST<-as.numeric(copper$DIST)
+```
+
+Update model
+
+```{r}
+copper.lme2<-update(copper.lme,correlation=corAR1(form=~iDIST|PLATE))
+copper.lme2<-update(copper.lme2,method='REML')
+```
+
+However, we have not checked if the residuals were correct
+
+```{r}
+plot(copper.lme2)
+```
+
+Again, this is a borderline case. 
+
+However, since we are dealing with a complicated structure, we actually need to break the residual plot down into eacht factor
+
+```{r}
+plot(residuals(copper.lme2,type='normalized')~copper$COPPER)
+```
+
+We are using the standardized (normalized) residuals, as we accounted for the autocorrelation structure.
+
+We can do the same for distance
+```{r}
+plot(residuals(copper.lme2,type='normalized')~copper$DIST)
+```
+
+Now summarize the model
+```{r}
+with(copper,interaction.plot(DIST,COPPER,WORMS))
+summary(copper.lme2)
+```
+
+The degree of correlation between distance 1 and 2 is     ` Phi1 
+0.4479824 `
+
+There is some evidence about the interaction between distance and copper, so we cannot make any statements about a distance effect and a copper effect. 
+
+To explore this further, we can split up the dataset. To do this, we will use degrees of freedom. Better is to name specific contrasts within the analysis we just run
+
+```{r,include=FALSE}
+library('contrast')
+```
+
+Rerun model
+```{r}
+copper.lme2 <- lme(WORMS~COPPER*DIST,random=~1|PLATE,data=copper,
+  correlation=corAR1(form=~1|PLATE), method='REML')
+```
+
+```{r}
+contrast(copper.lme2,
+        a = list(COPPER = "control",DIST = levels(copper$DIST)),
+        b = list(COPPER = "Week 1",DIST = levels(copper$DIST)))
+```
+
+Look at control to Week 2
+```{r}
+contrast(copper.lme2,
+        a = list(COPPER = "control",DIST = levels(copper$DIST)),
+        b = list(COPPER = "Week 2",DIST = levels(copper$DIST)))
+```
+
+Look at Week1 to Week 2
+```{r}
+contrast(copper.lme2,
+        a = list(COPPER = "Week 1",DIST = levels(copper$DIST)),
+        b = list(COPPER = "Week 2",DIST = levels(copper$DIST)))
+```
+
+We are making too many comparisons now, so we need to make some Post-hoc corrections
+
+```{r}
+summary(glht(copper.lme2,linfct=mcp(COPPER='Tukey')))
+```
+
+Now produce a prettier interaction plot
+
+First, set up a prediction space
+```{r}
+newdata <- expand.grid(COPPER=levels(copper$COPPER),
+                       DIST=levels(copper$DIST))
+```
+
+Next, we extract from our model the coefficients and calculate our model matrix
+
+```{r}
+coefs <- fixef(copper.lme2)
+Xmat <- model.matrix(~COPPER*DIST,data=newdata)
+fit <- as.vector(Xmat %*% coefs)
+newdata$fit <- fit
+head(newdata)
+SE <- sqrt(diag(Xmat %*% vcov(copper.lme2) %*% t(Xmat)))
+newdata$lower <- fit-2*SE
+newdata$upper <- fit+2*SE
+head(newdata)
+```
+
+There is a negative confidence interval for the 3rd line. This should not be possible. We can fix this by for example do a Poisson or negative binomial
+
+And plot
+```{r}
+ggplot(newdata,aes(y=fit,x=as.numeric(DIST),color=COPPER))+
+  geom_errorbar(aes(ymin=lower,ymax=upper), width=0) +
+  geom_point() + geom_line() + 
+  theme_classic()
+```
+
+Or make it even prettier
+```{r}
+ggplot(newdata,aes(y=fit,x=as.numeric(DIST))) +
+  geom_errorbar(aes(ymin=lower,ymax=upper), width=0.5) +                  
+  geom_line(aes(linetype=COPPER))+  
+  geom_point(aes(shape=COPPER,fill=COPPER),size=3) +  
+  scale_fill_manual('Treatment',values=c('white','gray','black')) +
+  scale_shape_manual('Treatment',values=c(21,21,21)) +
+  scale_linetype_discrete('Treatment') +
+  scale_y_continuous('Density of worms')+
+  scale_x_continuous('Distance')+
+  theme_classic() +
+  theme(
+    text=element_text(size=10),
+    axis.title.y=element_text(vjust=2,size=rel(2)),
+    axis.title.x=element_text(vjust=-1,size=rel(2)),
+    legend.position=c(1,0), legend.justification=c(1,0)
+  )
+```
+
+------------
+**Generalized Linear Models**
+
+The presence-absence of lizards can be modelled to the shape of the island.
+```{r}
+polis <- read.csv('polis.csv',strip.white=T)
+head(polis)
+ggplot(polis,aes(y=PA, x=RATIO)) +
+  geom_point() +
+  theme_classic()
+```
+
+This is binomial data, so we're going to assume the data follows a binomial distribution. Make a pretty plot
+
+```{r}
+ggplot(polis,aes(y=PA, x=RATIO)) +
+  geom_point() +
+  geom_smooth(method='glm',formula=y~x, family='binomial') +
+  theme_classic()
+```
+
+Now let's put it in a model
+```{r}
+polis.glm <- glm(PA~RATIO, family=binomial(link='logit'), data = polis)
+par(mfrow=c(2,3))
+plot(polis.glm)
+```
+
+Not perfect but 'Eh', this is a small dataset
+
+Now we need to make sure to check that the model fits the data well.
+
+Option1: compare residuals to the residual df. This is the residual sum of squares
+Option2: getting p-value
+
+```{r}
+polis.resid <-sum(resid(polis.glm,type='pearson')^2)
+1-pchisq(polis.resid,polis.glm$df.resid)  #higher than 0.05, so no lack of fit
+1-pchisq(polis.glm$deviance,polis.glm$df.resid) #Idem
+```
+
+Some people prefer a ratio deviance (closer to 1 is better)
+```{r}
+polis.glm$deviance/polis.glm$df.resid
+```
+
+So our model is good, yay! Now we can summarize it.
+```{r}
+summary(polis.glm)
+```
+
+These terms however don't relate to a simple intercept or slope, as they are on a logit scale. So we need to do other things, like calculating the R^2:
+
+```{r}
+1-(polis.glm$deviance/polis.glm$null)
+```
+
+We also want to know at which point the switch occurs from likely to be present to likely to be absent (the LD50):
+```{r}
+-polis.glm$coef[1]/polis.glm$coef[2]
+```
+
+If we want to reproduce the curve, we need to predict (which involves one extra step compared to earlier, as we need to do a back-transformation):
+```{r}
+xs <- seq(min(polis$RATIO),max(polis$RATIO),len=1000)
+ys <- predict(polis.glm,newdata=data.frame(RATIO=xs),
+             type='link',se=T)
+```
+
+We can also do
+```{r}
+head(predict(polis.glm,newdata=data.frame(RATIO=xs),
+             type='response',se=T))
+```
+
+Which will project the data back to the original data, but we don't want it to do that yet as we want to calculate the confidence intervals, for which we need the transformed data
+```{r}
+ys$lwr <- polis.glm$family$linkinv(ys$fit - 2*ys$se.fit)
+ys$upr <- polis.glm$family$linkinv(ys$fit + 2*ys$se.fit)
+ys$fit <- polis.glm$family$linkinv(ys$fit)
+newdata <- data.frame(RATIO=xs, fit=ys$fit, lower=ys$lwr, upper=ys$upr)
+head(newdata)
+```
+
+Awesome! Now it is time to plooooot (pretty, please)
+
+```{r}
+ggplot(newdata,aes(y=fit, x=RATIO)) +
+  geom_line() +
+  geom_ribbon(aes(ymin=lower,ymax=upper), fill='blue', alpha=.2) +
+  theme_classic()
+```
+
+Ass this is a model with a single predictor, we could just put the raw data in there, such as
+```{r}
+ggplot(newdata,aes(y=fit, x=RATIO)) +
+  geom_line() +
+  geom_ribbon(aes(ymin=lower,ymax=upper), fill='blue', alpha=.2) +
+  geom_point(data=polis,aes(y=PA,x=RATIO)) +
+  theme_classic()
+```
+
+
+---------------
+**Poisson regression**
+
+The closer a poisson distribution is to 0, the more skewed it becomes. The further away from 0, the more it starts resembling a Gaussian. The problem start if the mean is less then 5. In a Poisson, we assume mean = variance. This ratio should be 1. However, a lot of data is over-dispersed, which means that this ratio >1. This can be caused by a lot of factors. A likely scenario is that the data is more variable then you expect based on your model. A second posibility is clumpiness in the data, which is stochastic difference between observations. Another source is an over-representation of zero's in the data.
+-higher-than-expected variation (solved with *quasi-poisson*, *negative binomial*, or adding an *observation level random effect*, which will 'soak-up' the excess variability)
+-clumpiness (solved with quasi-poisson)
+-zero-inflation (solved with zero-inflated poisson)
+
+```{r}
+pois<-read.csv('data.pois.csv', strip.white=T)
+head(pois)
+scatterplot(y~x, data=pois)
+```
+
+There is potential non-normality of the y variable. Instead of doing a transformation, let's model it as a Poisson, as this is count data. Good practise is to count the number of zero's and the number we're expecting to get
+```{r}
+pois.tab <-table(pois$y==0)
+pois.tab
+```
+
+So there are no zero's in this data
+
+Now we're going to express it as a percentage (0%). We want to know what proportion of the dataset should be zero. So how many do we expect to get? Get the mean first.
+```{r}
+mu <-mean(pois$y)
+mu
+```
+
+How many zero's do we expect from a Poisson distribution with mu = 6.25? We can generate data:
+```{r}
+cnts <-rpois(1000,mu)
+pois.tab <- table(cnts==0)
+pois.tab/sum(pois.tab)
+```
+
+So let's now fit a model with a Poisson distribution
+```{r}
+pois.glm <- glm(y~x, data=pois, family='poisson')
+pois.glm <- glm(y~x, data=pois, family=poisson(link='log'))
+```
+
+Now look at the residuals
+```{r}
+par(mfrow=c(2,3))
+plot(pois.glm,ask=F,which=1:6)
+```
+
+No patterns or problems there, so on that basis, we can conclude that our model is not reliable so far. Now let's test for the lack of fit
+
+```{r}
+pois.resid <- sum(resid(pois.glm, type='pearson')^2)
+1-pchisq(pois.resid,pois.glm$df.resid)
+1-pchisq(pois.glm$deviance,pois.glm$df.resid)
+pois.resid/pois.glm$df.resid
+pois.glm$deviance/pois.glm$df.resid
+```
+
+Great!
+But now, how do we know it was even worth doing a Poisson? Fit a standard Gaussian and comparing the fits
+
+```{r}
+pois.glmG <- glm(y~x, data=pois,family='gaussian')
+AICc(pois.glm,pois.glmG)
+```
+
+Yes, it was necessary
+
+```{r}
+summary(pois.glm)
+```
+
+Get the confidence intervals
+```{r}
+confint(pois.glm)
+```
+
+OR
+
+```{r,include=FALSE}
+library(gmodels)
+```
+
+```{r}
+ci(pois.glm)
+```
+
+Upper CI is `exp(0.1115114 + 2*0.01858457) `which is not the same as `exp(0.1505562)`
+
+R^2 is:
+```{r}
+1-(pois.glm$deviance/pois.glm$null)
+```
+
+
+Next one, quasi-poisson
+```{r}
+data.qp<-read.csv('data.qp.csv', strip.white=T)
+head(data.qp)
+ggplot(data.qp,aes(y=y,x=x)) +
+  geom_point() + 
+  geom_rug() +
+  geom_smooth(method='lm')
+```
+
+With `geom_rug()` we can identify clumpiness
+
+```{r}
+data.qp.tab<-table(data.qp$y==0)
+data.qp.tab/sum(data.qp.tab)
+mu <- mean(data.qp$y)
+cnts <- rpois(1000,mu)
+data.qp.tab <- table(cnts == 0)
+data.qp.tab/sum(data.qp.tab)
+```
+
+So it is *possible* the data is over-dispersed, because there are a lot of zero's. We will fit a Poisson, so we have something to compare to, and fit also a quasi-poisson
+
+```{r}
+data.qp.glm <- glm(y~x, data= data.qp, family='poisson')
+data.qp.glm2 <- glm(y~x, data= data.qp, family='quasipoisson')
+AICc(data.qp.glm,data.qp.glm2)
+```
+
+NOTE: we cannot calculate the AIC from a quasi-poison. So the only option is to use the likely-ratio test.
+
+```{r}
+anova(data.qp.glm,data.qp.glm2)
+```
+
+A quasi-poisson will estimate the mean first, and then go back and estimate the variance. For this reason the confidence intervals will be different for both models.
+```{r}
+summary(data.qp.glm2)
+```
+
+The over-dispersion parameter is greater than 2 (which we use as a cut-off value), so we conclude there is overdispersion.
+
+Another option is to use a negative binomal, which is:
+```{r,include=FALSE}
+library(MASS)
+```
+```{r}
+data.qp.nb <-glm.nb(y~x, data=data.qp)
+```
+
+Get the theta
+```{r}
+data.qp.nb$theta
+```
+
+This is not the exact same as the dispersion parameter, but we use it in the same way.
+
+```{r}
+summary(data.qp.nb)
+```
+ 
+ We can use a nb for clumpiness or with zero-inflated data (up to 20% zero's)
+ 
+```{r}
+data.qp.glm3<-glm(y~x,data=data.qp,family=negative.binomial(theta=2.2))
+```
+
+For this we need to know the theta though, so this method is less useful than the previous one
+
+Let's spend more time on zero-inflated models. There can be 2 reasons: 
+-there is nothing to observe (can be modelled with Poisson)
+-the observation is missed
+
+```{r}
+data.zip <- read.csv('data.zip.csv',strip.white=T)
+head(data.zip)
+ggplot(data.zip,aes(y=y,x=x)) + geom_point()
+```
+
+What we observed and expected
+```{r}
+mu <- mean(data.zip$y)
+cnts<-rpois(1000,mu)
+data.zip.tab <-table(cnts == 0)
+data.zip.tab/sum(data.zip.tab)
+```
+
+```{r,include=FALSE}
+library(pscl)
+```
+
+Only handle the fact I have excess zero's
+```{r}
+data.zip.zip <- zeroinfl(y~x | 1, dist = "poisson", data = data.zip)
+```
+
+Or model the excess zero's as well, and see if there is a pattern
+```{r}
+data.zip.zip1 <- zeroinfl(y~x | x, dist = "poisson", data = data.zip)
+```
+
+```{r}
+summary(data.zip.zip)
+summary(data.zip.zip1)
+```
+
+To see if there is a pattern in the data, look at this part:
+'Zero-inflation model coefficients (binomial with logit link)'
+In this case there is no pattern
+
+Which models the data better?
+```{r}
+AICc(data.zip.zip,data.zip.zip1)
+```

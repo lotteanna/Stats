@@ -1,0 +1,590 @@
+Murray Logan's Stats Course
+========================================================
+#install.packages(‘knitr’)
+When installing packages in knitr, it is important to set the mirror and location of the library
+
+```
+install.packages("car", repos="http://cran.ms.unimelb.edu.au/")
+library("car", lib.loc="/Library/Frameworks/R.framework/Versions/3.0/Resources/library")
+```
+#install.packages('ggplot2', repos="http://cran.ms.unimelb.edu.au/")
+#install.packages("gridExtra", repos="http://cran.ms.unimelb.edu.au/")
+#install.packages("MASS",repos="http://cran.ms.unimelb.edu.au/")
+#install.packages("MuMIn", repos="http://cran.ms.unimelb.edu.au/")
+#install.packages("effects", repos="http://cran.ms.unimelb.edu.au/")
+#install.packages("multcomp", repos="http://cran.ms.unimelb.edu.au/")
+#install.packages('contrast', repos="http://cran.ms.unimelb.edu.au/")
+#install.packages('gmodels',repos="http://cran.ms.unimelb.edu.au/")
+#install.packages('pscl', repos="http://cran.ms.unimelb.edu.au/")
+#install.packages('MCMCpack',repos="http://cran.ms.unimelb.edu.au/")
+#install.packages('MCMCpack',repos="http://cran.ms.unimelb.edu.au/")
+#install.packages('reshape',repos="http://cran.ms.unimelb.edu.au/")
+#install.packages('vegan',repos="http://cran.ms.unimelb.edu.au/")
+
+To get the contents of the package, type `MCMCpack:::`
+
+```{r, include=FALSE}
+library("ggplot2",lib.loc="/Library/Frameworks/R.framework/Versions/3.0/Resources/library")
+library(gridExtra)
+library("MASS")
+library("MuMIn")
+library("effects")
+library("multcomp")
+library("nlme")
+library('MCMCpack')
+library('coda')
+```
+A linear model consists of the intercept, slope and predictor. A linear model DOES NOT have to be a straigth line, it only means that there are No x in the power (eg y = ax + b). A non linear model does not imply that there are x only at the base (eg y = ab^x)
+
+I am experiencing lay-out problems: entering a newline or removing superscript formatting.
+www.flutterbys.com.au/stats/downloads/data/ 
+
+Download 'fertilizer.csv'
+
+```{r}
+setwd("~/Documents/Monash/PhD/R/MurrayLoganStatsCourse14")
+fert <- read.csv('fertilizer.csv',strip.white=T)
+```
+It is good practise to enter the 'strip.white=T' command as this chomps off any white spaces in the document.
+
+Give the first 6 lines of the data
+```{r}
+head(fert)
+```
+
+Also good practise to get the variables of the data
+```{r}
+str(fert)
+```
+
+So quickly explore the data it is also smart to get a summary
+```{r}
+summary(fert)
+```
+
+--------------------------
+
+For the next section we need the package 'car'
+
+
+
+Now make a scatterplot
+```{r}
+scatterplot(YIELD~FERTILIZER,data=fert)
+```
+
+And run ggplot
+```{r}
+ggplot(fert,aes(y=YIELD, x=FERTILIZER))+geom_point()
+```
+
+Different options in ggplot (white background)
+```{r}
+ggplot(fert,aes(y=YIELD, x=FERTILIZER))+geom_point()+theme_classic()
+```
+
+Alter the scales
+```{r}
+ggplot(fert,aes(y=YIELD, x=FERTILIZER))+geom_point()+
+  theme_classic()+
+  scale_x_continuous('Fertilizer') +
+  scale_y_continuous('Grass yield')
+```
+
+The order of commands is not important EXCEPT for the geometric features (each geometric layer is plotted in the order they are called).
+
+
+
+```{r}
+ggplot(fert,aes(y=YIELD, x=FERTILIZER))+geom_point()+
+  theme_classic()+
+  scale_x_continuous(expression(Fertilizer~(g*m^2))) +
+  scale_y_continuous(expression(Grass~yield~(g*m^2))) 
+```
+
+To see which plotting expression options are available, type
+demo(plotmath)
+
+These expressions need to be put into expression() to be transformed.
+Anywhere you want a space in between words, put a ~ instead
+
+You can add items to your graphs like this
+```{r}
+p+geom_smooth(method='lm')
+p<-ggplot(fert,aes(y=YIELD, x=FERTILIZER))+geom_point()+
+  theme_classic()+
+  scale_x_continuous(expression(Fertilizer~(g*m^2))) +
+  scale_y_continuous(expression(Grass~yield~(g*m^2))) 
+p+theme(axis.title.x=element_text(vjust=-1,size=rel(1.5)),
+        axis.title.y=element_text(vjust=2,size=rel(1.5)))
+p<-p+theme(axis.title.x=element_text(vjust=-1,size=rel(1.5)),
+        axis.title.y=element_text(vjust=2,size=rel(1.5)))
+```
+
+Add lines. Blue line is best fit for data, grey area is 95% confidence interval.
+```{r}
+p+geom_smooth(method='lm')
+```
+
+Will also run for general linear models
+```{r}
+p+geom_smooth(method='glm',formula=y~x,family='poisson')
+```
+
+And negative binomial (needs library MASS)
+
+```{r}
+p+geom_smooth(method='glm.nb',formula=y~x)
+```
+
+
+------------------------------
+**Modelling**
+
+Let's make some models:
+```{r}
+fert.lm<-lm(YIELD~FERTILIZER,data=fert)
+```
+
+Again look at the variables using extracter functions
+```{r}
+str(fert.lm)
+coef(fert.lm) #the coefficients of the linear model
+resid(fert.lm) #the residuals of each x value
+```
+
+Now start plotting. First prepare the graphical space with par(mfrow = c(2,3)).
+Plot all the diagnostic graphs of the model
+```{r}
+par(mfrow = c(2,3))
+plot(fert.lm,ask=F,which=1:6) 
+#ask=F turns off the asking prompt
+#which=1:6 will show the first 6 diagnostic graphs
+```
+
+plot [1,1] is the **residual plot**, the unexplained bit of the model. There should be no pattern in this plot. If there is a pattern, this can occur for several reasons:
+-wrong model is implied
+-unequal variance (will create wedge in residual box)
+-temporal autocorrelation (will produce horizontal stripes)
+A smoother (red line) will help you identify a potential pattern in the residuals
+
+**q-q normal plot** [1,2] shows the normality of the data. If the data is exactly normal, all points will be exactly on the diagonal line. In itself the q-q plot is not too useful, only if residual plot doesn't make sense
+
+**standarized residual plot** [1,3] is similar to the residual plot. This one should be looked at when you have preformed a correction for autocorrelation
+
+**cook's distance** [2,1] looks at how much of an outlier the data is on BOTH the y and x-axis. The close cook's d is to 1, the more of an outlier it is. This is for each observation, sorted in your observation order
+
+**leverage plots** [2,2] and [2,3] make up the cook's distance plots and show if the outliers are determined by outlier on the x and y-axis respectively.
+
+
+**If** all of these diagnostic graphs don't show any problem, **only then** can you run the summary of the model
+
+summary() like plot() is an overloaded function. This means that the output of these functions will differ depending on the data that is inputted. For example, a summary of a model or summary of a table.
+
+```{r}
+summary(fert.lm)
+```
+The **intercept** estimate shows if the intercept is equal to 0, there is almost never a biological interpretation for this
+The **slope** estimate shows if the slope is equal to 0 
+The **F-statistic** is the squared value of the t-value of the slope. 
+
+Can also look at confidence intervalls instead of p-values, as they are far more informative
+```{r}
+confint(fert.lm)
+```
+The interval doesn't overlap 0 and is for this reason the effect of the slope is significant
+
+Open a new dataset that has some problems
+```{r}
+peake <- read.csv('peake.csv',strip.white=T)
+head(peake)
+str(peake)
+summary(peake)
+scatterplot(INDIV~AREA,data=peake)
+```
+Now, this data is not normal distributed. So we need to do something explore this data.
+
+First, transform the data
+```{r}
+scatterplot(log(INDIV)~log(AREA),data=peake)
+```
+This seems to have improved the data
+
+Now fit a model reflecting the data
+```{r}
+peake.lm<-lm(log(INDIV)~log(AREA),data=peake)
+str(peake.lm)
+coef(peake.lm) 
+resid(peake.lm)
+par(mfrow = c(2,3))
+plot(peake.lm,ask=F,which=1:6) 
+summary(peake.lm)
+```
+Great!
+
+Now predict values based on the model, so we can plot
+```{r}
+#I first need to 'predict the model (as it was transformed)
+xs <- seq(min(peake$AREA),max(peake$AREA),len=100)
+#this will make a sequence of 100 points in between the minimum and maximum values
+newdata <- data.frame(AREA=xs) #put this in a data frame
+head(newdata)
+pred<-predict(peake.lm, newdata=newdata,interval='confidence')
+head(pred)
+newdata<-cbind(newdata,pred) #cbind binds data according to columns
+```
+Now for each predicted valua there is a fitted value and a lower and upper confidence interval
+
+And plot
+```{r}
+ggplot(newdata,aes(y=fit, x=AREA)) +
+  geom_line() +
+  geom_ribbon(aes(ymin=lwr,ymax=upr),fill='blue') +
+  geom_point(data=peake,aes(y=log(INDIV),x=AREA))
+   #confidence intervals, make sure to name the lower and upper!
+```
+
+--------------------------
+**Multiple Linear Regression**
+
+Regression with multiple predictor variables.
+
+**Centering** of the data: calculating the mean of your x or y and subtracting this value from all of your individual values. This will also **reduce the correlation** between variables and also help to **convert** your model.
+
+**Co-linearity**: you can't have predictors in the model that correlate to each other. To test this, take each predictor and test them against the other predictors. If there is an R^2 higher than .8, this is considered a correlation. We use 1-R^2, the variance inflation. A variance inflation greater then 5 is generally considered a correlation (some people use 3). If there is a correlating predictor variable, this predictor can;t be in the same model as the others.
+**vif** will give this variance inflation between each predictor variable 
+
+Explore this with the next dataset
+```{r}
+loyn<-(read.csv('loyn.csv',strip.white=T))
+head(loyn)
+str(loyn)
+summary(loyn)
+scatterplotMatrix(~ABUND+DIST+LDIST+AREA+GRAZE+ALT+YR.ISOL,data=loyn,diagonal='boxplot')
+#try to transform some of the data to achieve normality
+scatterplotMatrix(~ABUND+log10(DIST)+log10(LDIST)+log10(AREA)+GRAZE+ALT+YR.ISOL,data=loyn,diagonal='boxplot')
+```
+
+Now make a model
+```{r}
+loyn.lm<-lm(ABUND~log10(DIST)+log10(LDIST)+log10(AREA)+GRAZE+ALT+YR.ISOL,data=loyn,
+            na.action=na.fail)
+```
+
+And check the variance inflation
+```{r}
+vif(loyn.lm)
+```
+
+Produce the residual plots
+```{r}
+par(mfrow=c(2,3),oma=c(0,0,2,0))
+plot(loyn.lm,ask=F,which=1:6)
+```
+So looks OK
+
+Get a summary of the model
+```{r}
+summary(loyn.lm)
+```
+Here, the estimates, the **partial slopes**, are the relationship between **each individual** predictor variable and the respones at the **means** of the other predictor variables. 
+
+The next step model selection. One way to do this is with the AIC. The smaller the AIC, the better
+```{r}
+AICc(loyn.lm)
+```
+
+Need package MuMIn
+
+Run the function dredge (needs the command na.action = na.fail in the model call)
+```{r}
+dredge(loyn.lm,rank="AICc")
+```
+This will show you the best model based on the AIC, and also the weights for each model, which can be used for model averaging (the best slope can be the **average** of the slopes predicted by different models)
+```{r}
+loyn.av<-model.avg(dredge(loyn.lm,rank="AICc"),
+                   subset=delta<=2)
+```
+This now only takes into account those models which have a weight higer then 2.
+
+Get average coefficients
+```{r}
+summary(loyn.av)
+```
+
+Plot the added-variable plots
+```{r}
+avPlots(loyn.lm,ask=F)
+```
+
+The log10(AREA) plot shows the partial effect of area on abundance. The red line is the predicted trend if you hold all the other variables constant. The dots are the data that you would get if you held all of the other data constant. 
+
+Other way of showing this is in library effects
+Plot data
+```{r}
+plot(allEffects(loyn.lm,default.lecels=1000,ask=F))
+```
+
+Plot only the model that included important predictor variables
+```{r}
+loyn.lm1<-lm(ABUND~log10(AREA)+GRAZE,data=loyn)
+plot(allEffects(loyn.lm1,default.lecels=1000,ask=F))
+```
+
+Get the effect of area at different grazing intesities
+```{r}
+newdata<-expand.grid(AREA=seq(1,2000,len=100),GRAZE=1:5)
+#expand.grid repeats everything for each grazing intensity.
+#This command should make us end up with a data frame with 500 rows
+head(newdata)
+pred<-predict(loyn.lm1,newdata=newdata,interval='confidence')
+newdata<-cbind(newdata,pred)
+head(newdata)
+ggplot(newdata,aes(y=fit,x=AREA)) +
+  geom_ribbon(aes(ymin=lwr,ymax=upr))
+ggplot(newdata,aes(y=fit,x=AREA,group=GRAZE,fill=factor(GRAZE),color=factor(GRAZE))) + geom_ribbon(aes(ymin=lwr,ymax=upr),alpha=0.2) + geom_line()
+```
+
+Get the predicted fitted values how area affects the response for each grazing cat.
+```{r}
+ggplot(newdata,aes(y=fit,x=AREA))+facet_grid(~GRAZE) + geom_line() +
+  geom_ribbon(aes(ymin=lwr,ymax=upr),alpha=0.2)
+```
+
+During the reporting of the data it is no longer required to show the best-fitting model. It is even possible to discuss multiple models.
+
+
+===============================================
+
+Running an Anova
+
+```{r}
+day<-read.csv('day.csv',strip.white=T)
+head(day)
+summary(day)
+boxplot(BARNACLE~TREAT,data=day)
+```
+
+To model an ANOVA just make a linear model. It has grown out of fashion to use aov()
+```{r}
+day.lm<-lm(BARNACLE~TREAT,data=day)
+par(mfrow=c(1,2))
+plot(day.lm,ask=F,which=1:2)
+```
+
+Make sure residuals are centered. You can also plot the residuals against predictors that have not been included in the model (e.g. time) and look for patterns.
+
+```{r}
+summary(day.lm)
+```
+
+The intercept is average effect of the first treatment group. The second estimate (TREATALG2) is the effect of the second treatment group **compared** to treatment group 1.
+
+Can also get the confidence intervals
+```{r}
+confint(day.lm)
+```
+
+Do pair-wise comparisons and corrections
+
+```{r}
+summary(glht(day.lm,linfct=mcp(TREAT="Tukey")))
+```
+
+These comparisons should be independent of each other (autoginal)
+
+
+**I missed a section here**
+
+-----------------------------
+**Multi-factor ANOVA**
+
+Factorial ANOVA includes an interaction. There are different possible scenarios. 
+
+```{r}
+star<-read.csv('starling.csv',strip.white=T)
+head(star)
+summary(star)
+boxplot(MASS~SITUATION*MONTH,data=star)
+```
+
+There are 8 combinations. Each combination has to be normally distributed. It looks good.
+
+An ANOVA table shows how much of the variation in your data is explained by your predictor variables and their interaction. As the explained and unexplained variation are expressed in terms of each other, the replications need to be balanced (e.g. equal sample sizes). Look at this with
+```{r}
+replications(MASS~SITUATION*MONTH,data=star)
+```
+
+So this dataset is balanced
+
+Fit the model
+```{r}
+star.lm<-lm(MASS~SITUATION*MONTH,data=star)
+```
+
+And look at diagnostic plots
+```{r}
+par(mfrow=c(2,1))
+plot(star.lm,ask=F,which=1:2)
+```
+
+In case of the following error:
+Error in plot.new() : figure margins too large
+
+```{r}
+dev.off()
+```
+
+And run again
+
+Get the interaction plot and stats
+```{r}
+with(star,interaction.plot(SITUATION,MONTH,MASS))
+summary(star.lm)
+```
+
+Intercept here represents the mean Mass of SITUATIONS1 in Jan, this is the first possible combination.
+Estimate of SITUATIONS2 is the difference compared to SITUATIONS1 in Jan. MONTHNovember is the difference in Mass between S1 in Jan and Nov. 
+If there is no interaction with month, the slopes of Jan and Nov are parallel. The SITUATIONS2:MONTHNovember is the difference in slope in S2 compared to the situation where the slopes would be parallel.
+
+```{r}
+summary(glht(something))
+```
+
+
+Another dataset
+```{r}
+quinn<-read.csv('quinn.csv',strip.white=T)
+head(quinn)
+summary(quinn)
+```
+
+We need normality, equal variance, balance and indendence. The boxplot will show the first 2. 
+```{r}
+boxplot(SQRTRECRUITS~SEASON*DENSITY,data=quinn)
+```
+
+To get the balance
+```{r}
+replications(SQRTRECRUITS~SEASON*DENSITY,data=quinn)
+```
+
+So this is considered to be an unbalanced design.
+The consequences are as follows. We make 2 models which should be exactly the same
+```{r}
+quin.lm1<-lm(SQRTRECRUITS~SEASON*DENSITY,data=quinn)
+quin.lm2<-lm(SQRTRECRUITS~DENSITY*SEASON,data=quinn)
+```
+
+Which gives the outputs
+```{r}
+anova(quin.lm1)
+anova(quin.lm2)
+```
+
+However, if we ask for a summary
+```{r}
+summary(quin.lm1)
+summary(quin.lm2)
+```
+
+So if I am **not** interested in an anova table, balance doesn't matter!
+
+So the question is, do we need to look at the anova table? If we do, we need to ask for **Type 3 Sums of Squares**. First of all, before these can be fitted, we need to first make sure not every group is compared to the first group. So we need to make a contrast which is not the treatment
+```{r}
+contrasts(quinn$SEASON) <-contr.sum
+contrasts(quinn$DENSITY) <- contr.sum
+quin.lm <- lm(SQRTRECRUITS~DENSITY*SEASON,data=quinn)
+Anova(quin.lm,type='III')
+```
+
+Conclusion is that there is a significant interaction between SEASON and DENSITY (this procedure will take some of the interaction effect away). Show this interaction
+```{r}
+with(quinn,interaction.plot(SEASON,DENSITY,SQRTRECRUITS))
+```
+
+So what do we do now? We need to divide the data. We can do 2 seperate ANOVAs, one for each density. Or we can run 4, 1 for each season.
+
+```{r}
+data.lm.summer <- lm(SQRTRECRUITS~DENSITY,data=subset(quinn,SEASON=='Summer'))
+anova(data.lm.summer)
+data.lm.autumn <- lm(SQRTRECRUITS~DENSITY,data=subset(quinn,SEASON=='Autumn'))
+anova(data.lm.autumn)
+data.lm.spring <- lm(SQRTRECRUITS~DENSITY,data=subset(quinn,SEASON=='Spring'))
+anova(data.lm.spring)
+data.lm.winter <- lm(SQRTRECRUITS~DENSITY,data=subset(quinn,SEASON=='Winter'))
+anova(data.lm.winter)
+```
+
+This is a perfectly fine way to deal with complex datasets
+
+
+----------------------------------------------
+**Dealing with Heterogeneity**
+
+```{r}
+d2<-read.csv('D2.csv',strip.white=T)
+head(d2)
+summary(d2)
+boxplot(y~x,data=d2)
+```
+
+There is not necessarily a problem with normality. However, the variance between the groups is quite different (variance of A is much larger than D).
+
+First let's see what happens if we analyze it the standard way
+```{r}
+d2.lm <- lm (y~x, data=d2)
+plot(d2.lm,ask=F,which=1:2)
+```
+
+We are going to estimate the Maximum Likelihood off the data. Instead of lm we're going to use GLS. A GLS will first run an lm and then re-run the analysis to estimate the random effects. Finally, it will run again to update the fixed effects.
+
+The difference between Maximum Likelyhood and Restricted ML: RML is more appropriate for estimating random effects. Residuals and variances are random effects. We want to estimate our variances correctly and thus we need to use RML.
+
+```{r}
+d2.gls <- gls(y~x, data=d2, method='REML')
+summary(d2.gls)
+anova(d2.gls)
+```
+
+When looking at residual plots, it is the standardized residuals we should care about more.
+```{r}
+plot(residuals(d2.gls,'normalized')~fitted(d2.gls))
+```
+
+Now let's do it with the correct correction. Instead of using the same variance each time, we're going to change the variance using the weights. This is how to correct for unequal variance. It will take the standard variance co-variance matrix and will multiply it by weights, which will tell it to produce a seperate co-variance matrix for each level of x. 
+
+```{r}
+d2.gls1<-gls(y~x, data=d2, weights=varIdent(form=~1|x), method='REML')
+```
+
+If we use the normal residual plot, it looks like we didn't do anything.
+```{r}
+plot(residuals(d2.gls1,)~fitted(d2.gls1))
+```
+
+However, if we look at the **standardized residual plot** we  see a difference
+```{r}
+plot(residuals(d2.gls1,'normalized')~fitted(d2.gls1))
+```
+
+Now look at the different levels of x
+```{r}
+summary(d2.gls1)
+```
+
+Now, was this worth doing? The **wrong** way is to look if this is the result I wanted. We need to look at the AIC
+
+```{r}
+AIC(d2.gls,d2.gls1)
+```
+
+So it is better to fit seperate variance in this case. However, it was without cost, as the df is lower. AIC does correct for this, so it tells you it was worth correction, despite the cost.
+
+We can also compare the logLikelihood
+```{r}
+anova(d2.gls,d2.gls1)
+```
+
+This test confirms that the logLikelihood is also higher for the corrected model, and so we confirm it is a good step to correct for this.
+

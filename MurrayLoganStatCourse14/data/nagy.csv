@@ -1,0 +1,230 @@
+Species,Common,Mass,FMR,Taxon,Habitat,Diet,Class,MASS
+1,  Pipistrellus pipistrellus,Pipistrelle,7.3,29.3,Ch,ND,I,Mammal,0.0073
+2,  Plecotus auritus,Brown long-eared bat,8.5,27.6,Ch,ND,I,Mammal,0.0085
+3,  Myotis lucifugus,Little brown bat,9,29.9,Ch,ND,I,Mammal,0.009
+4,  Gerbillus henleyi,Northern pygmy gerbil,9.3,26.5,Ro,D,G,Mammal,0.0093
+5,  Tarsipes rostratus,Honey possum,9.9,34.4,Tr,ND,N,Mammal,0.0099
+6,  Anoura caudifer,Flower-visiting bat,11.5,51.9,Ch,ND,N,Mammal,0.0115
+7,  Macrotus californicus,Big-eared bat,13,21.5,Ch,D,I,Mammal,0.013
+8,  Peromyscus crinitus,Cactus mouse,13.4,39.3,Ro,D,O,Mammal,0.0134
+9,  Mus domesticus,Wild house mouse,15.1,47.1,Ro,D,O,Mammal,0.0151
+10,  Cleithrionomys rutilus,Bank vole,16,57.6,Ro,ND,H,Mammal,0.016
+11,  Sminthopsis crassicaudata,Narrow-footed marsup. mouse,16.6,68.6,Da,ND,I,Mammal,0.0166
+12,  Perognathus formosus,Long-tailed pocket mouse,17.9,45.2,Ro,D,G,Mammal,0.0179
+13,  Peromyscus maniculatus,Deer mouse,17.9,53.4,Ro,D,O,Mammal,0.0179
+14,  Peromyscus leucopus,White-footed deer mouse,19.2,41.4,Ro,ND,O,Mammal,0.0192
+15,  Microtus arvalis,Meadow mouse,20,90,Ro,ND,O,Mammal,0.02
+16,  Eremitalpa namibensis,Namib Desert golden mole,20.7,12.5,In,D,I,Mammal,0.0207
+17,  Eptesicus fuscus,Big brown bat,20.8,43.6,Ch,ND,I,Mammal,0.0208
+18,  Gerbillus allenbyi,Allenbys gerbil,22.8,35.6,Ro,D,G,Mammal,0.0228
+19,  Cleithrionomys glareolus,Bank vole,23.4,88,Ro,ND,H,Mammal,0.0234
+20,  Microtus agrestis,Field vole,26.8,77.8,Ro,ND,H,Mammal,0.0268
+21,  Gerbillus pyramidum,Greater Egyptian gerbil,31.8,45.2,Ro,D,G,Mammal,0.0318
+22,  Pseudomys albocinereus,Australian native mouse,32.6,62.2,Ro,ND,O,Mammal,0.0326
+23,  Antechinus stuartii,Brown antechinus,33,86.4,Da,ND,I,Mammal,0.033
+24,  Phascogale calura,Wambenger,33.5,61.9,Da,ND,C,Mammal,0.0335
+25,  Dipodomys merriami,Merriams kangaroo rat,34.3,47.6,Ro,D,G,Mammal,0.0343
+26,  Microtus pennsylvanicus,Meadow vole,36.9,115,Ro,ND,H,Mammal,0.0369
+27,  Acomys cahirinus,Common spiny mouse,38.3,51.8,Ro,D,O,Mammal,0.0383
+28,  Sekeetamys calurus,Bushy-tailed jird,41.2,44,Ro,D,O,Mammal,0.0412
+29,  Microgale dobsoni,Shrew-tenrec,42.6,77.1,In,ND,I,Mammal,0.0426
+30,  Microgale talazaci,Shrew-tenrec,42.8,66.5,In,ND,I,Mammal,0.0428
+31,  Acomys russatus,Golden spiny mouse,45,47.8,Ro,D,O,Mammal,0.045
+32,  Lemmus trimucronatus,Brown lemming,55.2,201,Ro,ND,H,Mammal,0.0552
+33,  Dipodomys microps,Chisel-tooth kangaroo rat,57.1,84.5,Ro,D,O,Mammal,0.0571
+34,  Praomys natalensis,Multi-mammate mouse,57.3,86.6,Ro,ND,O,Mammal,0.0573
+35,  Antechinus swainsonii,Broad-footed marsup. mouse,62.6,150,Da,ND,I,Mammal,0.0626
+36,  Meriones crassus,Jird,69.2,65,Ro,D,G,Mammal,0.0692
+37,  Phyllostomus hastatus,Spear-nosed bat,80.8,146,Ch,ND,I,Mammal,0.0808
+38,  Arvicola terrestris,Water vole,85.8,119,Ro,ND,H,Mammal,0.0858
+39,  Ammospermophilus leucurus,Antelope ground squirrel,87,88,Ro,D,O,Mammal,0.087
+40,  Tamias striatus,Eastern chipmunk,96.3,143,Ro,ND,O,Mammal,0.0963
+41,  Thomomys bottae,Bottas pocket gopher,104,130,Ro,ND,H,Mammal,0.104
+42,  Petaurus breviceps,Sugar glider,124,173,Pt,ND,O,Mammal,0.124
+43,  Gymnobelideus leadbeateri,Leadbeaters possum,125,226,Pt,ND,O,Mammal,0.125
+44,  Psammomys obesus,Fat sand rat,170,165,Ro,D,H,Mammal,0.17
+45,  Spermophilus saturatus,Golden-mantled ground sqrl.,214,226,Ro,ND,H,Mammal,0.214
+46,  Isoodon auratus,Golden bandicoot,333,285,Pe,ND,O,Mammal,0.333
+47,  Spermophilus parryi,Arctic ground squirrel,630,817,Ro,ND,O,Mammal,0.63
+48,  Bassariscus astutus,Ring-tailed cat,752,472,Ca,D,C,Mammal,0.752
+49,  Potorous tridactylus,Long-nosed potoroo,825,517,Ma,ND,H,Mammal,0.825
+50,  Vulpes cana,Blanfords fox,972,642,Ca,D,C,Mammal,0.972
+51,  Petauroides volans,Greater glider,995,520,Pt,ND,H,Mammal,0.995
+52,  Pseudocheirus peregrinus,Ring-tail possum,1000,615,Pt,ND,H,Mammal,1
+53,  Bettongia penicillata,Short-nosed rat kangaroo,1100,593,Ma,ND,H,Mammal,1.1
+54,  Isoodon obesulus,Short-nosed brown bandicoot,1230,644,Pe,ND,O,Mammal,1.23
+55,  Vulpes macrotis,Kit fox,1480,1180,Ca,D,C,Mammal,1.48
+56,  Lepus californicus,Black-tailed jackrabbit,1800,1300,La,D,H,Mammal,1.8
+57,  Setonix brachyurus,Quokka,1900,548,Ma,ND,H,Mammal,1.9
+58,  Vulpes velox,Swift fox,2100,1780,Ca,ND,C,Mammal,2.1
+59,  Aepyrpimnus rufescens,Rufous rat kangaroo,2860,1430,Ma,ND,H,Mammal,2.86
+60,  Tachyglosssus aculeatus,Echidna,2860,875,Ta,ND,I,Mammal,2.86
+61,  Marmota flaviventris,Yellow-bellied marmot,3190,2430,Ro,ND,H,Mammal,3.19
+62,  Bradypus variegatus,Three-toed sloth,4150,545,Xe,ND,H,Mammal,4.15
+63,  Macropus eugenii,Tammar wallaby,4380,1150,Ma,ND,H,Mammal,4.38
+64,  Thylogale billiardieri,Red-bellied wallaby,5980,1630,Ma,ND,H,Mammal,5.98
+65,  Aloutta palliata,Mantled howler monkey,7330,2580,Pr,D,H,Mammal,7.33
+66,  Phascolarctos cinereus,Koala,7520,1710,Ph,ND,H,Mammal,7.52
+67,  Proteles cristatus,Aardwolf,8540,1850,Ca,D,I,Mammal,8.54
+68,  Petrogale xanthopus,Rock wallaby,8900,2210,Ma,ND,H,Mammal,8.9
+69,  Lyacon pictus,African wild dog,25170,15300,Ca,D,C,Mammal,25.17
+70,  Arctocephalus gazella,Antarctic fur seal,34600,23000,Pi,M,C,Mammal,34.6
+71,  Canis lupus,Timber wolf,37300,17700,Ca,ND,C,Mammal,37.3
+72,  Arctocephalus galapagoensis,Galapagos fur seal,37400,4780,Pi,M,C,Mammal,37.4
+73,  Odocoileus hemionus,Mule deer,39100,18000,Ar,ND,H,Mammal,39.1
+74,  Antidorcas marsupialis,Springbok,43300,24100,Ar,D,H,Mammal,43.3
+75,  Macropus giganteus,Eastern grey kangaroo,44500,8670,Ma,ND,H,Mammal,44.5
+76,  Callorhinus ursinus,Northern fur seal,51100,36100,Pi,M,C,Mammal,51.1
+77,  Zalophus californianus,California sea lion,78000,38600,Pi,M,C,Mammal,78
+78,  Neophoca cinerea,Australian sea lion,83500,39500,Pi,M,C,Mammal,83.5
+79,  Phoca vitulina,Common seal,99000,52500,Pi,M,C,Mammal,99
+80,  Archilochus alexandri,Black-chinned hummingbird,3.7,29.1,Ap,TeF,N,Aves,0.0037
+81,  Calypte anna,Annas hummingbird,4.5,31.8,Ap,CS,N,Aves,0.0045
+82,  Thalurania colombica,Crowned woodnymph,4.9,37.9,Ap,TF,N,Aves,0.0049
+83,  Auriparus flaviceps,Verdin,6.6,30,Pa,D,I,Aves,0.0066
+84,  Chalybura urochrysia,Bronze-tailed plumeleteer,7.2,57.9,Ap,TF,N,Aves,0.0072
+85,  Malurus cyaneus,Superb blue wren,8.3,34.2,Pa,TeF,I,Aves,0.0083
+86,  Lampornis clemenciae,Blue-throated hummingbird,8.8,81.7,Ap,TeF,N,Aves,0.0088
+87,  Zosterops lateralis,Grey-breasted silvereye,9.5,41.7,Pa,EF,F,Aves,0.0095
+88,  Parus ater,Coal tit,9.5,47.4,Pa,CF,I,Aves,0.0095
+89,  Nectarinia violacea,Orange-breasted sunbird,9.5,66.2,Pa,FY,N,Aves,0.0095
+90,  Acanthorhynchus tenuirostris,Eastern spinebill,9.7,53,Pa,TeF,N,Aves,0.0097
+91,  Troglodytes aedon,House wren,10.6,60.8,Pa,TeF,I,Aves,0.0106
+92,  Parus cristatus,Crested tit,11.1,40.6,Pa,CF,I,Aves,0.0111
+93,  Parus montanus,Willow tit,11.4,44.1,Pa,CF,I,Aves,0.0114
+94,  Parus caeruleus,Blue tit,11.5,64,Pa,CF,I,Aves,0.0115
+95,  Eremiornis carteri,Spinifexbird,12,51.5,Pa,D,I,Aves,0.012
+96,  Parus cinctus,Siberian tit,12.8,51.4,Pa,CF,I,Aves,0.0128
+97,  Ficedula hypoleuca,Pied flycatcher,13.5,65.8,Pa,OW,I,Aves,0.0135
+98,  Riparia riparia,Sand martin,14.3,81.7,Pa,TM,I,Aves,0.0143
+99,  Muscicapa striata,Pacific swallow,14.4,52,Pa,TeF,I,Aves,0.0144
+100,  Hirundo tahitica,Spotted flycatcher,14.4,64.9,Pa,TF,I,Aves,0.0144
+101,  Phylidonyris pyrrhoptera,Crescent honeyeater,14.6,75.9,Pa,TeF,N,Aves,0.0146
+102,  Ficedula albicollis,Collared flytcatcher,15.9,78.6,Pa,TeF,I,Aves,0.0159
+103,  Phylidonyris novaehollandiae,New Holland honeyeater,17.3,77.6,Pa,TeF,N,Aves,0.0173
+104,  Parus major,Great tit,18,97.4,Pa,TeF,O,Aves,0.018
+105,  Erithacus rubecula,Robin,18.7,71.3,Pa,TeF,I,Aves,0.0187
+106,  Passerculus sandwichensis,Savannah sparrow,18.7,80.4,Pa,SM,O,Aves,0.0187
+107,  Delichon urbica,House martin,19,79.8,Pa,TM,I,Aves,0.019
+108,  Junco phaeonotus,Yellow-eyed junco,19.5,73.8,Pa,TM,O,Aves,0.0195
+109,  Junco hyemalis,Dark-eyed junco,19.6,76.6,Pa,TM,O,Aves,0.0196
+110,  Tachycineata bicolor,Tree swallow,20.2,209,Pa,TM,I,Aves,0.0202
+111,  Hirundo rustica,Barn swallow,20.4,95.8,Pa,TM,I,Aves,0.0204
+112,  Prunella modularis,Dunnocky,21.2,86,Pa,TeF,I,Aves,0.0212
+113,  Phainopepla nitens,Phainopepla,22.7,79.1,Pa,D,O,Aves,0.0227
+114,  Cormobates leucophaeus,White-throated treecreeper,23.7,81.4,Pa,TeF,I,Aves,0.0237
+115,  Oenanthe oenanthe,Northern wheatear,24.3,91.4,Pa,TM,I,Aves,0.0243
+116,  Pyrrhula pyrrhula,Bullfinch,25.1,88,Pa,TeF,G,Aves,0.0251
+117,  Philetairus socius,Sociable weaver,25.5,48.7,Pa,D,O,Aves,0.0255
+118,  Sialia mexicana,Western bluebird,27.4,95,Pa,TeF,I,Aves,0.0274
+119,  Melopsittacus undulatus,Budgerigar,27.9,59.1,Ps,D,O,Aves,0.0279
+120,  Mirafra erythrochlamys,Dune lark,28.5,64.3,Pa,D,O,Aves,0.0285
+121,  Merops viridis,Blue-throated bee-eater,34.3,85.3,Co,TF,I,Aves,0.0343
+122,  Oceanites oceanus,Wilsons storm-petrel,42.3,119,Pr,M,C,Aves,0.0423
+123,  Oceanodroma leucorhoa,Leachs storm-petrel,45.9,118,Pr,M,C,Aves,0.0459
+124,  Mimus polyglottos,Mockingbird,47.6,121,Pr,DF,O,Aves,0.0476
+125,  Progne subis,Purple martin,49,163,Pa,DF,I,Aves,0.049
+126,  Actitis hypoleucos,Common sandpiper,51.6,146,Ch,M,C,Aves,0.0516
+127,  Calidris alba,Sanderling,52,141,Ch,M,C,Aves,0.052
+128,  Neophema petrophila,Rock parrot,62.8,106,Ps,D,O,Aves,0.0628
+129,  Cinclus cinclus,Dipper,63.7,196,Pa,TM,I,Aves,0.0637
+130,  Charadrius hiaticula,Ringed plover,74.8,302,Ch,M,C,Aves,0.0748
+131,  Ceryle rudis,Pied kingfisher,76,210,Co,TF,C,Aves,0.076
+132,  Sturnus vulgaris,Starling,78.7,269,Pa,DF,O,Aves,0.0787
+133,  Aethia pusilla,Least auklet,80.3,350,Ch,M,C,Aves,0.0803
+134,  Melanerpes formicivorous,Acorn woodpecker,82,195,Pi,OW,O,Aves,0.082
+135,  Geophaps plumifera,Spinifex pigeon,87,76,Cl,D,G,Aves,0.087
+136,  Turdus merula,Blackbird,96,179,Pa,TeF,I,Aves,0.096
+137,  Sterna paradisaea,Arctic tern,101,335,Ch,M,C,Aves,0.101
+138,  Arenaria interpres,Ruddy turnstone,108,352,Ch,M,C,Aves,0.108
+139,  Pelecanoides georgicus,South Georgia diving petrel,109,464,Pr,M,C,Aves,0.109
+140,  Sterna hirundo,Common tern,127,343,Ch,M,C,Aves,0.127
+141,  Pelecanoides urinatrix,Common diving petrel,137,557,Pr,M,C,Aves,0.137
+142,  Callipepla gambelii,Gambels quail,145,90.8,Ga,D,O,Aves,0.145
+143,  Barnardius zonarius,Port Lincoln parrot,145,189,Ps,D,O,Aves,0.145
+144,  Pachyptila desolata,Antarctic prion,149,391,Pr,M,C,Aves,0.149
+145,  Alle alle,Dovkie,164,696,Ch,M,C,Aves,0.164
+146,  Ptychoramphus aleuticus,Cassins auklet,174,413,Ch,M,C,Aves,0.174
+147,  Sterna fuscata,Sooty tern,187,241,Ch,M,C,Aves,0.187
+148,  Ammoperdix heyi,Sand partridge,190,148,Ga,D,O,Aves,0.19
+149,  Anous stolidus,Brown noddy,195,352,Ch,M,C,Aves,0.195
+150,  Falco tinnunculus,Eurasian kestrel,211,341,Fa,TM,C,Aves,0.211
+151,  Cacatua roseicapilla,Galah,307,349,Ps,D,O,Aves,0.307
+152,  Phaethon lepturus,White-tailed tropicbird,370,777,Pe,M,C,Aves,0.37
+153,  Cepphus grylle,Black guillemot,380,860,Ch,M,C,Aves,0.38
+154,  Puffinus pacificus,Wedge-tailed shearwater,384,614,Pr,M,C,Aves,0.384
+155,  Rissa tridactyla,Black-legged kittiwake,386,795,Pr,M,C,Aves,0.386
+156,  Alectoris chukar,Chukar,395,260,Ga,D,O,Aves,0.395
+157,  Uria lomvia,Thick-billed murre,834,1480,Ch,M,C,Aves,0.834
+158,  Uria aalga,Guillemot,940,1870,Ch,M,C,Aves,0.94
+159,  Eudyptula minor,Little penguin,1050,1050,Sp,M,C,Aves,1.05
+160,  Sula sula,Red-footed booby,1070,1220,Pe,M,C,Aves,1.07
+161,  Centrocercus urophasianus,Sage grouse,2500,1540,Ga,D,G,Aves,2.5
+162,  Morus capensis,Cape gannet,2580,3380,Pe,M,C,Aves,2.58
+163,  Diomedea immutabilis,Laysan albatross,3070,1330,Pr,M,C,Aves,3.07
+164,  Spheniscus demersus,Jackass penguin,3170,1950,Sp,M,C,Aves,3.17
+165,  Sula bassanus,Northern gannet,3210,4870,Pe,M,C,Aves,3.21
+166,  Diomedea chrysostoma,Grey-headed albatross,3710,2390,Pr,M,C,Aves,3.71
+167,  Pygoscelis antarctica,Chinstrap penguin,3790,5600,Sp,M,C,Aves,3.79
+168,  Macronectes giganteus,Giant petrel,3890,4330,Pr,M,C,Aves,3.89
+169,  Pygoscelis adeliae,Adelie penguin,3990,3790,Sp,M,C,Aves,3.99
+170,  Eudyptes chrysolophus,Macaroni penguin,4270,2950,Sp,M,C,Aves,4.27
+171,  Pygoscelis papua,Gentoo penguin,6170,4650,Sp,M,C,Aves,6.17
+172,  Diomedea exulans,Wandering albatross,8420,3350,Pr,M,C,Aves,8.42
+173,  Aptenodytes patagonicus,King penguin,12900,7410,Sp,M,C,Aves,12.9
+174,  Struthio camelus,Ostrich,88300,18000,St,D,O,Aves,88.3
+175,  Mesalina olivieri,Sand lizard,1.1,0.29,La,SA,I,Reptiles,0.0011
+176,  Rhoptropus afer,Namib Desert gecko,2.6,0.23,Ge,D,I,Reptiles,0.0026
+177,  Urosaurus nigricaudus,Black-tailed brush lizard,3.2,1.38,Ph,SC,I,Reptiles,0.0032
+178,  Uta stansburiana,Side-blotched lizard,3.2,0.67,Ph,D,I,Reptiles,0.0032
+179,  Pedioplanis lineoocellata,Spotted sand lizard,3.3,0.54,La,D,I,Reptiles,0.0033
+180,  Heliobolus lugubris,Bushveld lizard,3.8,0.8,La,D,I,Reptiles,0.0038
+181,  Meroles anchietae,Namib Desert dune lizard,4,0.6,La,D,O,Reptiles,0.004
+182,  Cnemidophorus hyperythrus,Orangethroat whiptail,4.3,1.13,Te,SC,I,Reptiles,0.0043
+183,  Acanthodactylus pardalis,Sand lizard,4.5,0.23,La,SA,I,Reptiles,0.0045
+184,  Sceloporus graciosus,Sagebrush lizard,5,0.82,Ph,SC,I,Reptiles,0.005
+185,  Sceloporus virgatus,Striped plateau lizard,6.3,1.06,Ph,SC,I,Reptiles,0.0063
+186,  Callisaurus draconoides,Zebra-tailed lizard,7.1,1.12,Ph,D,I,Reptiles,0.0071
+187,  Podarcis lilfordi,Lacertid lizard,7.4,1.49,La,SC/ME,I,Reptiles,0.0074
+188,  Sceloporus variabilis,Rosebelly lizard,7.7,1.92,Ph,TR,I,Reptiles,0.0077
+189,  Chalcides sexlineatus,Gran Canarian skink,7.8,0.72,Sc,STR,I,Reptiles,0.0078
+190,  Ptyodactylus hasselquistii,Negev Desert gecko,9.1,1.2,Ge,D,I,Reptiles,0.0091
+191,  Varanus caudolineatus,Goanna/monitor lizard,10.4,3,Va,SA/SC,C,Reptiles,0.0104
+192,  Galloti altantica,Agamid lizard,11.9,1.5,La,STR,H,Reptiles,0.0119
+193,  Sceloporus occidentalis,Western fence lizard,12.1,1.8,Ph,SC,I,Reptiles,0.0121
+194,  Cnemidophorus tigris,Western whiptail,16.5,4.1,Te,D,I,Reptiles,0.0165
+195,  Pachydactylus bibronii,Birbons gecko,16.6,2.2,Ge,D,I,Reptiles,0.0166
+196,  Sceloporus jarrovi,Yarrows spiny lizard,16.6,1.9,Ph,SC,I,Reptiles,0.0166
+197,  Mabuya striata,Stiped skink,19.5,2.9,Sc,D,I,Reptiles,0.0195
+198,  Thamnophis sirtalis,Common garter snake,22,5.2,Co,SC,C,Reptiles,0.022
+199,  Phrynosoma platyrhinos,Desert horned lizard,23,2.7,Ph,D,I,Reptiles,0.023
+200,  Elgaria multicarinatus,Southern alligator lizard,25.3,2,An,SC,I,Reptiles,0.0253
+201,  Lacerta viridis,Common lizard,25.5,5.8,La,TE,I,Reptiles,0.0255
+202,  Galloti galloti,Agamid lizard,25.6,4.6,La,STR,H,Reptiles,0.0256
+203,  Microlophus albemariensis,Lava lizard,28.2,3.3,Tr,IT,I,Reptiles,0.0282
+204,  Ctenophorus nuchalis,Central netted dragon,36.8,9.6,Ag,D,I,Reptiles,0.0368
+205,  Galloti stehlini,Giant agamid lizard,47.3,7.9,La,STR,H,Reptiles,0.0473
+206,  Dipsosaurus dorsalis,Desert iguana,52.5,6.5,Ig,D,H,Reptiles,0.0525
+207,  Agama impalearis,Bibrons agama,54.4,16.8,Ag,D,I,Reptiles,0.0544
+208,  Angolosaurus skoogi,Skoogs lizard,57.4,3,Gr,D,H,Reptiles,0.0574
+209,  Varanus acanthurus,Ridge-tailed monitor,60,3.7,Va,TE,C,Reptiles,0.06
+210,  Varanus scalaris,Goanna/monitor lizard,66.4,7.8,Va,EW,C,Reptiles,0.0664
+211,  Vipera aspis,European viper,67.2,6.3,Vi,TE,C,Reptiles,0.0672
+212,  Crotalus lepidus,Mottled rock rattlesnakes,109,4.7,Vi,SC,C,Reptiles,0.109
+213,  Masticophus flagellum,Coachwhip,124,11.7,Co,D,C,Reptiles,0.124
+214,  Crotalus cerastes,Sidewinder,129,5,Vi,D,C,Reptiles,0.129
+215,  Coluber constrictor,Racer,132,12.8,Co,W,C,Reptiles,0.132
+216,  Sauromalus obesus,Chuckwalla,167,15.7,Ig,D,H,Reptiles,0.167
+217,  Chlamydosaurus kingii,Frillneck lizard,635,52.4,Ag,W,I,Reptiles,0.635
+218,  Iguana iguana,Green iguana,860,60.1,Ig,SA,H,Reptiles,0.86
+219,  Tupinambis teguixin,Tegu,1170,214,Te,TR,C,Reptiles,1.17
+220,  Varanus rosenbergi,Goanna/monitor lizard,1180,100,Va,EW,C,Reptiles,1.18
+221,  Varanus mertensi,Mertens water monitor,1210,143,Va,M,C,Reptiles,1.21
+222,  Varanus gouldii,Sand monitor,1320,233,Va,TRW,C,Reptiles,1.32
+223,  Varanus panoptes,Goanna/monitor,1350,180,Va,TRW/RI,C,Reptiles,1.35
+224,  Amblyrhynchus cristatus,Galapagos marine iguana,1610,91.2,Ig,M,H,Reptiles,1.61
+225,  Gopherus agassizzi,Desert tortoise,2120,42.9,Ts,D,H,Reptiles,2.12
+226,  Varanus bengalensis,Bengal monitor,2560,393,Va,TR,C,Reptiles,2.56
+227,  Varanus salvator,Goanna/monitor lizard,7530,906,Va,SA/TR,C,Reptiles,7.53
+228,  varanus giganteus,Perenties,7700,807,Va,DTR,C,Reptiles,7.7
+229,  Varanus komodensis,Komodo dragon,45200,2430,Va,TR,C,Reptiles,45.2

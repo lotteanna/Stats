@@ -1,0 +1,12 @@
+
+model {
+  for (i in 1:n) {
+    y[i]~dpois(mu[i])
+    log(mu[i]) <- inprod(beta[],x[i,])
+    y.err[i] <- y[i] - mu[i]
+    }
+for (i in 1:nX) {
+    beta[i] ~ dnorm(0,1.0E-06) #prior
+    }
+}
+

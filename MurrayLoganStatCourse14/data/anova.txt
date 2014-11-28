@@ -1,0 +1,16 @@
+
+model {
+  for (i in 1:n) {
+    barnacle[i]~dnorm(mean[i],tau.res)
+    mean[i] <- alpha+beta[treat[i]]
+    }
+#priors and derivatives
+    alpha~dnorm(0,1.0E-6)
+    beta[1] <- 0
+  for (i in 2:nTreat) {
+    beta[i] ~ dnorm(0,1.0E-06) #prior
+    }
+  tau.res <- 1/ (sigma.res*sigma.res)
+  sigma.res~dgamma(0.001,0.001) #prior on sd residulas
+  }
+

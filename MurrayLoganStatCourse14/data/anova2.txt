@@ -1,0 +1,28 @@
+
+model {
+  for (i in 1:n) {
+    barnacle[i]~dnorm(mean[i],tau.res)
+    mean[i] <- alpha+beta[treat[i]]
+    }
+#priors and derivatives
+    alpha~dnorm(0,1.0E-6)
+    beta[1] <- 0
+  for (i in 2:nTreat) {
+    beta[i] ~ dnorm(0,1.0E-06) #prior
+    }
+  tau.res <- 1/ (sigma.res*sigma.res)
+  sigma.res~dgamma(0.001,0.001) #prior on sd residuals
+#Group mean derivatives
+  for (i in 1:nTreat) {
+    Treatment.means[i] <- beta[i]+alpha
+}
+#pairwise effects
+for (j in 1:nTreat){
+for (i in 1:nTreat){
+eff[j,i] <- Treatment.means[j] - Treatment.means[i]
+}
+}
+#Bare vs Algae
+comp1 <- ((Treatment.means[3]+Treatment.means[4])/2) - ((Treatment.means[1]+Treatment.means[2])/2)
+}
+

@@ -1,0 +1,41 @@
+BA,TIME,CI,KELP
+Before, 1,Control,10.4
+Before, 2,Control,10.3
+Before, 3,Control, 8.6
+Before, 4,Control,14.1
+Before, 5,Control,13.1
+Before, 6,Control,14.1
+Before, 7,Control, 8.9
+Before, 8,Control, 6.3
+Before, 9,Control, 5.8
+After,10,Control,16.5
+After,11,Control,36.0
+After,12,Control,43.0
+After,13,Control,41.4
+After,14,Control,38.3
+After,15,Control,35.5
+After,16,Control,28.2
+After,17,Control,12.1
+After,18,Control, 9.1
+After,19,Control, 7.6
+After,20,Control, 6.6
+Before, 1,Impact, 4.3
+Before, 2,Impact, 3.4
+Before, 3,Impact, 6.3
+Before, 4,Impact, 8.3
+Before, 5,Impact, 5.8
+Before, 6,Impact, 8.3
+Before, 7,Impact, 4.9
+Before, 8,Impact, 3.5
+Before, 9,Impact, 3.3
+After,10,Impact, 2.0
+After,11,Impact, 1.8
+After,12,Impact, 1.5
+After,13,Impact, 1.6
+After,14,Impact, 2.8
+After,15,Impact, 2.9
+After,16,Impact, 2.5
+After,17,Impact, 0.9
+After,18,Impact, 0.8
+After,19,Impact, 0.7
+After,20,Impact, 0.6

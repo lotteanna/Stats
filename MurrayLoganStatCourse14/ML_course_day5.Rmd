@@ -1,0 +1,577 @@
+Day 5 - Multivariate analyses
+========================================================
+```{r req_libs, include=FALSE,cache=TRUE}
+library(ggplot2,lib.loc="/Library/Frameworks/R.framework/Versions/3.0/Resources/library")
+library(reshape)
+library(vegan)
+library(grid)
+library(car)
+```
+
+Sometimes there are predictor variables that are correlated to each other, but you still are interested in all of them.
+
+You can:
+- subdivide the data
+- make regression trees
+- bind the data and turn them in a few predictor variables, multivariate analysis
+
+**Multivariate analysis** will only work if the data is correlated. If it's not, there is no consitency. 
+
+In mva, a dataset is built-up from the *variables* (the responding, correlated variables), and the *objects* (e.g. the sites at which the variables are measured)
+
+Two distinct types of multi-variate analysis:
+- R-mode is a data-reduction technique and based f on correlation among variables. The outcome of this can be put into a regression as a response or predictor. Stricly, we need to qorry about normality etc
+- Q-mode is based on the similarity of the objects. Offers a large flexibility in the way the data is combined as the assumption of normality is irrelevent. However, the observations are not independent, thus the output *cannot* be put into a regression.
+
+There is a inertia between disciplines, where one uses primarily R-mode and the other Q-mode. However, this distinction is becoming fuzzier as Q-mode becomes more comprehensive.
+
+In R-mode we often use correlation, as it is standardized (can range from -1 to 1) for the range of the kind of data. This is useful as some observations are more rare (e.g. the abundance of a certain taxa is lower than the other) and would otherwise influence the data less. However, if this is not important, it is better to look at the data from a covariance perspective. 
+Just like magnitude, variability determines the analysis of your data. 
+The best way to deal with magnitude and variability is to standardize one way, look at the data, standardize another way, look at the data etc.
+Transformations might be necessary. One often used transformation is a forth-root transformation and then devide them all by their maximum. 
+
+package in R for mva: vegan
+
+decostand max 
+will standardize the data to the maximum value for each variable.
+
+Wisconsin double standardization
+> ```data.wds <- winsconsin(data[,-1])```
+
+---
+Start off with R-mode analalysis
+
+Based on process called eigenanalysis (same as Principal Component Analysis).
+
+Let's say there are 3 species with fairly strong correlations amongst them. When they are plotted in 3D, there is a correlation amongst them.
+Eigenanalysis is axis rotation . What happens is that axis 1 will go through the cloud of data and explain the largest proportion of variability. Axis 2 will get the next most variability AND is 90 degrees to the first and are thus 100% uncorrelated. The 3rd is 90degrees to the 1st and 2nd axis, and probability won't explain much of the data. 
+
+Function in R is:
+> ``` data.rda <- rda(data[,1], scale =TRUE)```
+
+rda stands for redundancy analysis. PCA is a reduction of redundancy analysis. Scale = T is based on correlation. Scale = F is based on covariance. 
+
+Axis retention, how many axis do we keep? 3 rules:
+- eigenvalues > 1 (if all variables were completely uncorrelated, the eigenvalue for each would be 1. So everything with a value > 1 would obviously be combining better than random noise. Everything with a value < 1 would be explaining less than random noise)
+- Cummunaltive percentages greater than 80%.
+- 'Cinck' in the data (when plotting intertia vs PC)
+
+Component loadings: how much does each variable contributes to each PC? These are the correlations between the variables and the PC.
+If lot's of variable are have a high component loading to a certain PC, we can say that this environmental gradient explains those variables to a high level.
+
+Site scores: will show the difference between the objects. So now we can plot the site scores (for the main PC) to the variable values. So this technique is mostly a survey that leads to more research questions. 
+
+Ordination plot: variable and object values plotted to PC1 and PC2. 
+
+```{r}
+veg <- read.csv('veg.csv', strip.white=T)
+head(veg)
+ggplot(veg,aes(y=SP1,x=SITE,col=HABITAT)) +
+  geom_point()
+ggplot(veg,aes(y=SP2,x=SITE,col=HABITAT)) +
+  geom_point()
+```
+
+We can do this for all species, or get it all in 1 graph.
+
+'Melt' all the data (WHAT DOES THIS MEAN?, look at ML website, there is an entire workshop on data manipulation)
+Tell R which **not** to melt
+
+```{r}
+veg.long <- melt(veg, id=c("SITE","HABITAT"))
+```
+
+and plot this
+
+```{r}
+ggplot(veg.long,aes(y=value,x=SITE,col=HABITAT)) +
+  geom_point()+
+  facet_grid(~variable) + 
+  scale_color_manual("Habitat", values=c(1,2,3))
+```
+
+Routinely look at the scatterplot matrix when using a PCA
+```{r}
+pairs(veg[,3:10])
+```
+
+Look at the correlations. If there are none, there is no use for the multivariate analysis.
+Previously it was decided there is normality (no root transformation) and all species abundances are pretty similar (no need for wisconsis double)
+```{r}
+veg.pca <- rda(veg[,3:8], scale=T)
+summary(veg.pca)
+screeplot(veg.pca)
+```
+
+Based on the 3 rules, we're going to keep 3 PC's
+
+Now extract the component loadings for the species, i.e. which species contributed to which PC. 
+```{r}
+veg.pca$CA$v
+```
+
+Now an ordination plot to see how sites relate to each other
+```{r}
+biplot(veg.pca,scaling=2)
+```
+
+The scaling command only determines if the plot is scaled to the variable or the object
+```{r}
+biplot(veg.pca,scaling=1)
+```
+
+Now extract the object scores (in this case the coordinates for the sites). Get the scores and make a new column with the variable and object names, which makes it easier to plot
+```{r}
+newdata.sites <- as.data.frame(scores(veg.pca,choice=1:3,scaling=2)$sites)
+newdata.sites$Sites <- rownames(newdata.sites)
+head(newdata.sites)
+newdata.species <- as.data.frame(scores(veg.pca,choice=1:3,scaling=2)$species)
+newdata.species$Species <- rownames(newdata.species)
+head(newdata.sites)
+```
+
+
+```{r}
+ggplot(newdata.sites,aes(y=PC1,x=PC2)) +
+  geom_text(aes(label=Sites)) + 
+  geom_text(data=newdata.species,aes(label=Species),color='red') +
+  geom_segment(data=newdata.species,aes(yend=0,xend=0),color='red',
+               arrow=arrow(ends='first',length = unit(0.3,"cm"))) +
+  theme_classic() + theme(panel.background=element_rect(color='black'))
+```
+
+Now we re-draw this with the sites labeled on their habitat
+
+```{r}
+newdata.sites$Habitat <- veg$HABITAT
+```
+
+```{r}
+g1<-ggplot(newdata.sites,aes(y=PC1,x=PC2)) +
+    geom_text(aes(label=Habitat,color=Habitat)) +
+    geom_hline(yintercept=0, linetype='dotted') +
+    geom_vline(xintercept=0,linetype='dotted') +
+    coord_equal() +
+    theme_classic() + theme(panel.background=element_rect(color='black'))
+```
+
+Add to this plot and put the arrows on
+```{r}
+g1 <- g1 + 
+  geom_segment(data=newdata.species,aes(yend=0,xend=0),color='grey',
+               arrow=arrow(ends='first',length = unit(0.3,"cm"))) +
+  geom_text(data=newdata.species,aes(label=Species),color='grey') 
+```
+
+So let's now check if the species differ significantly between habitat PC.
+
+Get out the site scores
+
+```{r}
+veg.scores <- scores(veg.pca,choice=1:3,display="sites")
+```
+
+Run the model, this will run 3 separate anova's for PC1, 2 and 3
+```{r}
+summary(lm(veg.scores~veg$HABITAT))
+```
+
+So there is a statistical difference between habitat A-B and A-C for PC1 and PC2. PC3 doesn't seem to be associated with habitat at all.
+
+What if we don't have habitat data, but environmental data
+```{r}
+env <- read.csv('env.csv', strip.white=T)
+head(env)
+```
+
+Now combine this data with the previous PCA
+```{r}
+summary(veg.lm1 <- lm(veg.scores ~ Moisture+pH, data=env))
+```
+
+**NOTE**: it is not a good idea to match species data with environmental data!
+
+
+Now we can overlay on the previous figure evironmental data, which is called an environmental fit (this is awesome!):
+```{r}
+(data.envfit <- envfit(veg.pca, env=env$Moisture))
+```
+
+From this output we want to extract our scores, so we can put them on our graph.
+```{r}
+newdata.env <- as.data.frame(data.envfit$vectors$arrows)
+g1 + geom_segment(data=newdata.env,aes(yend = 0, xend = 0), color = 'blue',
+                  arrow = arrow(ends = 'first',length = unit(0.3,"cm")))
+```
+
+---
+Above analyses however assume linearity of the correlations. This causes sites to be similar when they are not. As you are measuring beyond the range of your species, sites become similar because they have no species in it. 
+
+So in this case we need to do **Correspondence Analysis**.
+This rearranges the array of variables and object to make the best match to the correspondence axis. And the next best fit  
+```
+data.ce <- cca(data)
+```
+
+Now, just like before, we can make the ordination plot. 
+
+```{r}
+veg.ca <- cca(veg[,3:10])
+summary(veg.ca, display=NULL)
+```
+
+```
+display=NULL stops R from producing all the scores
+```
+
+Now extract the scores
+```{r}
+veg.scores <- scores(veg.ca,choice=1:2,display="sites")
+```
+Now we can run the ANOVA and regression etc.
+
+
+**Redundancy analysis**: constrain the axis in the PCA to not be able to rotate in multi-dimentional space but constrain them to for example environmental variables. If you input 2 variables, the analysis will make up the other axis based on the data (as in PCA).
+
+Besides giving the proportion of data explained by constrained variables and other PC axis, it will also give the Permutation ANOVA, so it is tested if these invdividual variables determine all your traits.
+
+Permutation tests are sometimes the only option for some analyses, but they are not very powerful. This is because the power depends on the number of permutations. If there are only 10 permutations for example, we can at the best obtain a p-value of .1
+
+```{r}
+veg.rda<- rda(veg[,-1:-2]~Moisture+pH,data=env, scale=T)
+summary(veg.rda,display=NULL)
+```
+
+We had 8 species of plants, so the total intertia is 8. Moisture and pH determint 45% of the variation.
+```{r}
+plot(veg.rda,scaling=2)
+anova(veg.rda,step=1000) 
+anova(veg.rda,by="margin",step=1000) #margin command will seperate test for both constraint variables
+```
+
+Now do model selection
+```{r}
+drop1(veg.rda)
+```
+
+Neither dropped, so both are important
+
+So need to look if you need to do PCA/RDA (contraint by Euclidean distances) or CA/ CCA (constraint by chi^2 distances).
+
+---
+
+**Q-mode analyses**
+
+Euclindean distance:
+```d(jk) = sqrt(sum((y(ji) - y(ki))^2))```
+
+- No maximum value
+
+Bray-Curus distance
+- scales 0 - 1 (0 is identical)
+- only shared characteristics are included
+
+**Multi-dimensional scaling**
+- transformation
+- choose number of dimensions
+- random configuration
+- measure Kiskal's stress: measure each distance in the random configuration and compare how well this correspnds to the original distance matrix
+- iterate - gradient descent: shuffle data and see if stress is reduced. 
+- iterate until rules are met
+
+Rules
+- stress is below threshold (<0.2)
+- maximum number of iterations
+- stress is not reduced
+
+Axis have no real meaning
+
+To optimalize this procedure, one can use a prior for site position taken from a PCA as a starting point. 
+
+**Prorustes rotation**: Measures how much the axis had to rotate to get a better fit
+
+packageMDS will do all these step
+- transform and scale
+- generate disimilarity (Eucl or Bray)
+- PCoA for starting configuration
+- up to 20 random starts
+- procrusted used to determine final configuration
+- final scores are scales so they give PCA-like axes rotation
+
+``` data.nmds <- metaMDS(data[,-1]) ```
+
+```{r}
+macnally <-read.csv('macnally_full.csv')
+head(macnally)
+```
+
+Do square-root transformation and wisconsin double d
+```{r}
+macnally.std <- wisconsin(sqrt(macnally[,-1]))
+```
+
+Bray-Curtis
+```{r}
+macnally.dist <- vegdist(macnally.std,"bray")
+```
+
+Multi-dimensional scaling
+```{r}
+macnally.mds <- metaMDS(macnally.dist,k=3)
+macnally.mds <- metaMDS(macnally.dist,k=2)
+```
+
+View stress-plot
+```{r}
+stressplot(macnally.mds)
+```
+
+Ordination plot
+```{r}
+ordiplot(macnally.mds, display="sites",type="n")
+text(macnally.mds,lab=macnally$HABITAT,
+     col=as.numeric(macnally$HABITAT))
+ordihull(macnally.mds, macnally$HABITAT,kind="se",conf=0.95,lwd=2,draw="polygon")
+```
+
+Fit an ordination hull over this plot that will put circles around the habitats
+```{r}
+ordiplot(macnally.mds, display="sites",type="n")
+text(macnally.mds,lab=macnally$HABITAT,
+     col=as.numeric(macnally$HABITAT))
+ordihull(macnally.mds, macnally$HABITAT,kind="se",conf=0.95,lwd=2,draw="polygon")
+```
+
+Rather than a hull, we can draw an elipse, as a density measurement. Can do the same with the ordination plots in the PCA.
+```{r}
+ordiplot(macnally.mds, display="sites",type="n")
+text(macnally.mds,lab=macnally$HABITAT,
+     col=as.numeric(macnally$HABITAT))
+ordiellipse(macnally.mds,
+            macnally$HABITAT,kind="se",conf=0.95,lwd=2,draw="polygon",col='grey90')
+ordiellipse(macnally.mds,
+            macnally$HABITAT,kind="se",conf=0.80,lwd=2,draw="polygon",col='grey90')
+ordiellipse(macnally.mds,
+            macnally$HABITAT,kind="se",conf=0.50,lwd=2,draw="polygon",col='grey90')
+```
+
+But we can't just take these scores and put them in an ANOVA, as they're not independent from each other.
+```{r}
+habitat <- model.matrix(~-1+macnally$HABITAT)
+```
+
+Change the labels
+```{r}
+colnames(habitat) <- gsub("macnally\\$HABITAT","",colnames(habitat))
+envfit <- envfit(macnally.mds,env=habitat)
+envfit
+```
+
+---
+
+Expanding the dataset! More species and more environmental data!
+
+Start with two seperate datafiles, one for species, one for environmental data
+```{r}
+vareveg <- read.csv('vareveg.csv',strip.white=T)
+vareenv <- read.csv('vareenv.csv',strip.white=T)
+head (vareveg)
+```
+
+Start with a Mantel test. This is equivelent to correlation, except that this is a multivariate correlation. This is a Q-mode analysis, in that the starting point is a dissimilarity matrix. 
+
+Do a sqrt transformation wisconsin double and make sure to exclude the column site
+```{r}
+vareveg.std <- wisconsin(sqrt(vareveg[,-1]))
+```
+
+Make a dissimililarity matrix. 
+```{r}
+vareveg.dist <- vegdist(vareveg.std,"bray")
+```
+
+For the environmental data, we're going to preform a standardization
+```{r}
+vareenv.std <- decostand(vareenv[,-1],"standardize")
+```
+Now, everything is on the same scale, whether it was mol/L or something else.
+
+And fit a Euclidean distance (everything is already standardized)
+```{r}
+vareenv.dist <- vegdist(vareenv.std,"euc")
+```
+
+The Mantel grabs the 2 matrixes, correlates the two and gets the R values. It then shuffles one of those columns (and again and again) and checks if the R value of the randomized data has an R value similar or greater to the original configuration. Using these permutations (999 + 1x the origional data), it produces an R-value.
+```{r}
+mantel(vareveg.dist,vareenv.dist)
+```
+
+```{r}
+par(mar=c(4,4,0,0))
+plot(vareenv.dist,vareveg.dist,ann=F,axes=F,type="n")
+points(vareenv.dist,vareveg.dist,pch=16)
+axis(1)
+axis(2)
+box(bty="1")
+```
+
+```{r}
+str(mantel(vareveg.dist,vareenv.dist))
+hist(mantel(vareveg.dist,vareenv.dist)$perm)
+```
+
+This histogram shows that reshuffling of the data (randomizations) produce a significantly different distribution that the real data.
+
+Do a permanova, a multivariate permutation anova. 
+First check for multi-colinearity
+```{r}
+vif(lm(1:nrow(vareenv)~P+Mg+Fe+Mn+Baresoil+Humdepth,data=vareenv))
+```
+
+So we can indeed include all the variables
+
+```{r}
+adonis(vareveg.dist~P+Mg+Fe+Mn+Baresoil+Humdepth,data=vareenv.std)
+```
+
+We can also put in *interactions*
+
+Adonis works a little different with categorical data, so that is next.
+```{r}
+dune <- read.csv('dune.csv',strip.white=T)
+head(dune)
+```
+
+And go through it
+```{r}
+dune.dist <- vegdist(wisconsin(sqrt(dune[,-1])),"bray")
+```
+
+Look at the adonis
+```{r}
+adonis(dune.dist~MANAGEMENT,data=dune)
+```
+
+So we know that the Management has an impact, but we don't know which one of the management is actually influencing that.
+
+First, we are changing the order of all the management practises (so for example compare everything to natural management)
+
+```{r}
+dune$MANAGEMENT <- factor(dune$MANAGEMENT,
+                          levels=c("NM","SF","BF","HF"))
+```
+
+Now 'dummy-code' the levels of Management with a model matrix
+```{r}
+mm <- model.matrix(~MANAGEMENT,data=dune)
+head(mm)
+```
+
+Turn this in a data frame, that is needed for the analysis.
+```{r}
+mm <- data.frame(mm)
+```
+
+Now get the individual effects of each level of the categorical variable.
+```{r}
+dune.adonis <- adonis(dune.dist~MANAGEMENTBF+MANAGEMENTHF+MANAGEMENTSF,data=mm)
+dune.adonis
+```
+
+So the conclusion is Biological Farming (BF) doesn't alter the vegetation community, little evidence Hobby farming (HF) changes community, and SF has the greatest evidence.
+
+
+Classification trees also start with distance matrixes. 
+
+---
+Final part: **saving graphics**
+
+Bitmap units are pixels, all the other (pdf etc) are vector based.
+
+Turn graphics devices off with ```dev.off()```
+
+When you create a bitmap format, make sure that the resolution is at least 400.
+```
+png(file='junk.png',width=10,height=10,units='cm',res=400)
+ggplot(curdies, aes(y=DUGESIA,x=SEASON)) + geom_boxplot() + facet_wrap(~SITE)
+```
+
+Encapsulated postscript
+
+```
+postscript(file='junk2.png',width=10,height=10,paper='special',horizontal=FALSE)
+g1
+```
+
+Do need a special application to view a postscript
+
+The ```paper='special' ``` command will make sure the image is not printed in the middle of the A4 paper, but is cropped and depending on size
+
+```
+pdf(file='junk3.pdf',width=400,height=400,paper='special')
+g1
+```
+
+There is an option to send this entire thing off to word. 
+```library(reportRs)```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+

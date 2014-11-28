@@ -1,0 +1,15 @@
+
+model {
+  #Likelihood
+  for (i in 1:n) {
+    y[i]~dnorm(mu[i],tau)
+    mu[i] <- beta0+beta1*x[i]
+  }
+  
+  #Priors
+  beta0 ~dnorm(0,1.0E-6)
+  beta1 ~dnorm(0,1.0E-6)
+  tau <- 1/ (sigma * sigma)
+  sigma~dunif(0,100)
+}
+

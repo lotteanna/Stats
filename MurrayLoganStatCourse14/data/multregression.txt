@@ -1,0 +1,22 @@
+
+model {
+  #Likelihood
+  for (i in 1:n) {
+    abund[i]~dnorm(mu[i],tau)
+    mu[i] <- beta0+beta.dist*(dist[i])+beta.ldist*(ldist[i]) +
+      beta.area*(area[i]) + beta.graze*(graze[i]) + 
+      beta.alt*(alt[i]) + beta.yr*(yr[i])
+    }
+  
+  #Priors
+  beta0 ~dnorm(0,1.0E-6)
+  beta.dist ~dnorm(0,1.0E-6)
+  beta.ldist ~dnorm(0,1.0E-6)
+  beta.area ~dnorm(0,1.0E-6)
+  beta.graze ~dnorm(0,1.0E-6)
+  beta.alt ~dnorm(0,1.0E-6)
+  beta.yr ~dnorm(0,1.0E-6)
+  tau <- 1/ (sigma * sigma)
+  sigma~dunif(0,100)
+  }
+
