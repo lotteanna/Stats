@@ -1,0 +1,572 @@
+Day 4 - Bayesian
+========================================================
+
+Credit for this script goes to:
+Murray Logan (main script), Nicholas Deal (edits), Marcus Michelangeli (edits) and Lotte van Boheemen (edits)
+
+Set working directory and getting libraries
+```{r, cache=TRUE}
+setwd("insert working directory")
+library(plyr)
+library(nlme)
+library(ggplot2)
+library(R2jags)
+library(nlme)
+library(MASS)
+library(glmmBUGS)
+library(splines)
+library(mgcv)
+library(MuMIn)
+library(tree)
+``` 
+
+**Bayesian mixed effect model** (a hierarchical model in Bayesian as in Bayesian *everything* is a random
+effect. Therefore, we don't call these deisgns Mixed Effect as we do for frequentists)
+
+Load in data to be used 
+```{r}
+curdies<-read.csv("curdies.csv",strip.white=T)
+head(curdies)
+curdies$SITE<-as.factor(curdies$SITE)
+```
+
+First analyze the data using the frequentist approach
+```{r}
+curdies.ag<-ddply(curdies,~SEASON+SITE,numcolwise(mean))
+ggplot(curdies.ag, aes(y=DUGESIA, x=SEASON))+geom_boxplot()
+ggplot(curdies.ag, aes(y=S4DUGES, x=SEASON))+geom_boxplot() #S4DUGES seems to be a better
+curdies.lme<-lme(S4DUGES~SEASON,random=~1|SITE,data=curdies) #We use REML (by default) here. 
+#Maximum likelihood use when comparing models, otherwise always use REML which is the default
+summary(curdies.lme)
+#**To use a poisson model you need intergers, rather than means**
+```
+
+Now do the same model with the Bayesian approach 
+```{r}
+modelString="
+model {
+  for (i in 1:n) {
+  y[i]~dnorm(mu[i],tau)
+  mu[i]<-inprod(beta[],x[i,])+inprod(gamma[],z[i,])
+  }
+  for (i in 1:nX) {
+    beta[i]~dnorm(0,1.0E-6)
+  }
+  for (i in 1:nZ) {
+    gamma[i]~dnorm(0,tau.site)
+  }
+  tau<-1/(sigma*sigma)
+  sigma~dunif(0,100)
+  tau.site<-1/(sigma.site*sigma.site)
+  sigma.site~dunif(0,100)
+}
+"
+```
+Remember, the inprod(beta[], x[i,]) allows us to accomodate any combination of predictor variables. Well, the inprod(gamma[], z[i,]) similarly allows us to handle the "random" effects (Sites in this case)
+#Note however, that the priors for gamma have what is called a hyperprior (tau.site). Rather than fix the precision to 1.0E-6, we are estimating it...
+
+BTW, the use of the names like beta and gamma is purely convention, they can be anything- it is traditoinal to associate alll fixed effects parameters with a name 'beta'
+Then to distinguish 'fixed' and 'random' terms in equations (in the methods section of papers), 'random'effects are given a different Greek letter (typically gamma)
+Normally when writing a linear model in matrix notation, the fixed effects are given an X and the random effects are given a Z
+y~betaX+gammaZ (this is short-hand for mixed effects)
+
+```{r}
+writeLines(modelString,con="Nested.jags")
+
+X<-model.matrix(~SEASON,data=curdies)
+Z<-model.matrix(~-1+SITE, data=curdies)
+#Use -1 in this case to get rid of the intercept because you dont want it for random effects
+
+curdies.list<-list(y=curdies$S4DUGES,
+                   x=X, nX=ncol(X),
+                    z=Z, nZ=ncol(Z),
+                    n=nrow(curdies))
+
+
+params<-c('beta','sigma','gamma','sigma.site')
+
+curdies.r2jags<-jags(data=curdies.list,
+                     inits=NULL,
+                     parameters.to.save=params,
+                     model.file="Nested.jags",
+                     n.chains=3,
+                     n.iter=10000,
+                     n.burnin=1000,
+                     n.thin=5)
+
+print(curdies.r2jags)
+```
+
+The Summer mean ~0.030, difference between summer and winter ~0.791. 
+
+Note that frequentist underestimates the site means. Instead they represent how each site differs from the average site.
+---
+
+**BAYSIAN STATISTICS -- RANDOM BLOCK DESIGN**
+
+This next example shows how to analyse the tobacco data set with a Bayesian approach, as well as some information about 
+uing glmmBUGS to generate our model string.
+
+Frequentist approach
+```{r}
+tobacco<-read.csv("tobacco.csv",strip.white=T)
+head(tobacco)
+tobacco.lme<-lme(NUMBER~TREATMENT,random=~1|LEAF, data=tobacco)
+summary(tobacco.lme)
+```
+
+Now a generalized lme (GLM)
+We need to have whole number values for Poisson data
+
+```{r}
+tobacco$iNUMBER<-as.integer(tobacco$NUMBER)
+tobacco.glmm<-glmmPQL(iNUMBER~TREATMENT,random=~1|LEAF,data=tobacco,family='poisson') 
+```
+
+We can't get AICs from this as it does not use genuine maximum likelihood
+
+```{r}
+summary(tobacco.glmm) 
+```
+
+Technically we should check to make sure that this model is not overdispersed.
+DO NOT DO ```anova.lme(tobacco.glmm)```, as it gives absolute nonsense F and p values.
+
+In Bayesian
+
+```
+modelString="
+model {
+  for (i in 1:n) {
+  y[i]~dnorm(mu[i],tau)
+  mu[i]<-inprod(beta[],x[i,])+inprod(gamma[],z[i,])
+  }
+  for (i in 1:nX) {
+    beta[i]~dnorm(0,1.0E-6)
+  }
+  for (i in 1:nZ) {
+    gamma[i]~dnorm(0,tau.leaf)
+  }
+  tau<-1/(sigma*sigma)
+  sigma~dunif(0,100)
+  tau.leaf<-1/(sigma.leaf*sigma.leaf)
+  sigma.leaf~dunif(0,100)
+}
+"
+```
+
+Note that we are doing this as a gaussian. We could modify this model string to make it a Poisson
+
+```{r}
+writeLines(modelString,con="RCB.jags")
+
+X<-model.matrix(~TREATMENT,data=tobacco)
+Z<-model.matrix(~-1+LEAF, data=tobacco)
+
+tobacco.list<-list(y=tobacco$NUMBER,
+                    x=X, nX=ncol(X),
+                    z=Z, nZ=ncol(Z),
+                    n=nrow(tobacco))
+
+
+params<-c('beta','sigma','gamma','sigma.leaf')
+library(R2jags)
+
+tobacco.r2jags<-jags(data=tobacco.list,
+                     inits=NULL,
+                     parameters.to.save=params,
+                     model.file="RCB.jags",
+                     n.chains=3,
+                     n.iter=10000,
+                     n.burnin=1000,
+                     n.thin=5)
+
+#print(tobacco.r2jags)
+```
+
+The glmmBUGSpackage writes a model, creates an appropriate data list, and can generate initial values
+It is a useful tool for those who are just learning to work with Bayesian analysis.
+```
+
+a<-glmmBUGS(NUMBER~TREATMENT,data=tobacco,family='gaussian',effects='LEAF')
+length(a)
+names(a)
+a$ragged
+a$pql #this gives the result as if you had run a frequentist model
+summary(a$pql)
+```
+
+note that we should look in the working directory for the file called "model.txt" that was created by glmmBUGS
+
+
+---
+**Nonlinear relationships**
+
+**Asymptotic**
+
+```{r}
+data.gp<-read.csv("data.gp.csv",strip.white=T)
+data.gp.lm<-lm(y~x+I(x^2), data=data.gp) #Fit a second order polynomial, we're estimating 3 parameters
+```
+
+Note that you cannot use ```data.gp.lm<-lm(y~x+x^2, data=data.gp)``` becuase the ```I()``` function (identity function) 
+is necessary
+Effectively we have created a new predictor x^2 first, and then used this in our model.
+
+
+```{r}
+summary(data.gp.lm)
+#WE have a signficnt quadratic trend, not testing the relationship between something.
+data.gp.lm1<-lm(y~x, data=data.gp)
+anova(data.gp.lm1,data.gp.lm) 
+```
+
+Notice that the p-value from this anova is effectively the same as that given for the estimate of the second order term of
+```summary(data.gp.lm) ``` (Hence this step, and the step before are basically unnesessary)
+
+
+Another way of doing the above model...this way is often preferred 
+
+```{r}
+data.gp.lm<-lm(y~poly(x,2), data=data.gp) 
+```
+
+
+Lets now do a **NON LINEAR MODELS -ASYMPTOTIC** model 
+
+```{r}
+peake<-read.csv("peake.csv",strip.white=T)
+head(peake)
+ggplot(peake, aes(y=SPECIES,x=AREA))+geom_point() 
+```
+
+The data does not look linear
+
+Fit a straight linear line for comparison sake
+```
+peake.lmLin<-lm(SPECIES~AREA,data=peake) #Normal linear model
+```
+
+Fit a second order polynomial also for comparison (although this is not necessarily a logical model, as we doubt that there will be a peak in this model)
+```{r}
+peake.lmPoly<-lm(SPECIES~AREA+poly(AREA,2),data=peake)  #polynomial model --wont be logical
+```
+
+Provide some starting values for this power model. We just guessed these values very roughly.
+```{r}
+peake.nls<-nls(SPECIES~alpha*AREA^beta, data=peake, start=list(alpha=0.1,beta=0.5))
+```
+
+Note that nonlinear models assume certain relationships
+
+```{r}
+peake.nls.as<-nls(SPECIES~SSasymp(AREA,a,b,c),data=peake) 
+```
+
+For this asymptotic relationship we used SSasymp which uses 'self starting values'
+
+```{r}
+AIC(peake.lmLin,peake.lmPoly,peake.nls,peake.nls.as) 
+```
+The power model appears best, and the assymptotic model appears essentially the same (within 2). We may prefer power because it has fewer degrees of freedom. We may also prefer one type of model over the other because one model is more theoretically sound.
+
+We can calculate the standard error from self starting models. So we will do this for the asymptotic.
+
+```{r}
+xs<-with(peake,seq(min(AREA),max(AREA),l=100))
+ys<-predict(peake.nls.as,data.frame(AREA=xs))
+se<-sqrt(apply(attr(ys,"gradient"),1,function(x)
+          sum(vcov(peake.nls.as)*outer(x,x))))       #there is a small error in this line of code
+```
+
+Use confidence intervals defined as 2 times the standard error
+
+```{r}
+newdata<-data.frame(AREA=xs,fit=ys,lower=ys-2*se,upper=ys+2*se) 
+head(newdata)
+ggplot(newdata, aes(y=fit, x=AREA))+geom_ribbon(aes(ymin=lower,ymax=upper),fill='blue',alpha=0.5)+
+geom_line()+theme_classic() 
+```
+
+We appear to have one outlier with a particularly low residual. Perhaps there is a reason why this one was an outlier. Maybe there is a covariate that can explain this? -as a researcher we would have to look at our data set to determine whether these explanations are likely.
+
+---
+
+**NON LINEAR MODELS - Piecewise Regression**
+
+```{r}
+data.piecewise<-read.csv("data.piecewise.csv",strip.white=T)
+head(data.piecewise)
+ggplot(data.piecewise, aes(y=y, x=x))+geom_point()+theme_classic()
+#Looks like a threshold in the data
+```
+
+*Piecewise regression time*
+
+```{r}
+before<-function(x) ifelse(x<60, 60-x,0)
+after<-function(x) ifelse(x<60,0,x-60)
+before(seq(0,100,by=10))
+after(seq(0,100,by=10))
+data.piecewise.lm<-lm(y~before(x)+after(x),data=data.piecewise)
+summary(data.piecewise.lm) #Remember the intercept starts at 60 because that is where we have created the split. 
+```
+
+This appraoch makes sure that our two lines connect.
+Be careful with the interpretation of the parameter values from the above output. In this output, (intercept) represents the value at 60. The slopes represent slopes going in direction away from 60. But, where did the 60 value come from. We can use stats to find this split value.
+
+```{r}
+before<-function(x,bp) ifelse(x<bp, bp-x,0)
+after<-function(x,bp) ifelse(x<bp,0,x-bp)
+piecewise <- function(bp) {
+  mod <- lm(y ~ before(x,bp)+after(x,bp),
+            data=data.piecewise)
+  sum(resid(mod)^2)
+  }
+
+search.range<-c(0,100)
+pw.opt<-optimize(piecewise,interval=search.range)
+(bp<-pw.opt$minimum)
+
+mod<-lm(y~before(x,bp)+after(x,bp),
+        data=data.piecewise)
+
+```
+
+
+**Splines**
+
+```{r}
+ns(data.gp$x) 
+```
+
+ns==natural splines. Reprojects x-data into a kind of spline space
+```{r}
+ns(data.gp$x,k=3) #We ask for three knots
+```
+
+```{r}
+data.gp.lm<-lm(y~ns(x,df=2),data=data.gp)
+summary(data.gp.lm)
+data.gp.ns<-lm(y~ns(x),data=data.gp)
+summary(data.gp.ns)
+
+newdata<-data.frame(
+    x=seq(min(data.gp$x),
+          max(data.gp$x), l=100))
+pred<-predict(data.gp.lm,newdata=newdata,
+              interval='confidence')
+newdata<-cbind(newdata,pred)
+ggplot(newdata, aes(y=fit,x=x))+geom_point(data=data.gp,aes(y=y))+geom_ribbon(aes(ymin=lwr,ymax=upr),fill='blue',alpha=0.5)+geom_line()+theme_classic()
+```
+
+---
+GAMS
+
+```{r}
+data.gp.gam<-gam(y~s(x,k=3),data=data.gp)
+summary(data.gp.gam)    
+```
+
+This gives an intercept of zero (9.930e-17 is the smallest number the computer can produce)
+edf is the estimated degrees of freedom. The p-value tests whether this is significantly different from 1. If we have a p-value less than 0.25 than it is worthwhile keeping the smoother. If p>0.25, just fit a linear.
+
+```{r}
+plot(data.gp.gam)
+plot(data.gp.gam,resid=T,cex=10)
+
+xs<-seq(-8,4,l=100)
+pred<-predict(data.gp.gam, newdata=data.frame(x=xs),se=TRUE)
+dat<-data.frame(x=xs,fit=pred$fit,lower=pred$fit-2*pred$se.fit,upper=pred$fit+2*se*pred$se.fit)
+ggplot(data=dat, aes(y=fit, x=x, ymin=lower, ymax=upper),fill='blue', alpha=0.2)+geom_line()+geom_point(data=data.gp, aes(y=y,x=x))+theme_classic()
+
+loyn<-read.csv('loyn.csv',strip.white=T)
+head(loyn)
+#log10(AREa),log10(DIST),log10(LDIST) 
+
+loyn.gam<-gam(ABUND~
+                s(log10(DIST),k=3)+
+                s(log10(LDIST),k=3)+
+                s(log10(AREA),k=3)+s(GRAZE,k=3)+
+                s(ALT,k=3)+s(YR.ISOL,k=3),data=loyn)
+
+gam.check(loyn.gam,pch=19)
+
+loyn.gam<-gam(ABUND~
+                s(log10(DIST),k=4)+
+                s(log10(LDIST),k=3)+
+                s(log10(AREA),k=3)+s(GRAZE,k=3)+
+                s(ALT,k=3)+s(YR.ISOL,k=6),data=loyn)
+
+gam.check(loyn.gam,pch=19)
+
+loyn.gam1<-gam(ABUND~
+                log10(DIST)+
+                log10(LDIST)+
+                s(log10(AREA),k=3)+s(GRAZE,k=3)+
+                ALT+YR.ISOL,data=loyn)
+
+gam.check(loyn.gam1,pch=19)
+
+summary(loyn.gam1)
+
+plot(loyn.gam1,pages=1,all.terms=TRUE,shade=TRUE,pch=16,resid=TRUE,setWithMean=TRUE)
+
+loyn.gam2<-gam(ABUND~s(log10(AREA),k=6)+s(GRAZE,k=3),data=loyn)
+plot(loyn.gam2,pages=1,all.terms=TRUE,shade=TRUE,pch=16,resid=TRUE,setWithMean=TRUE)
+```
+
+We could dredge here if we wanted to
+
+```{r}
+loyn.gam<-gam(ABUND~
+                s(log10(DIST),k=4)+
+                s(log10(LDIST),k=3)+
+                s(log10(AREA),k=3)+s(GRAZE,k=3)+
+                s(ALT,k=3)+s(YR.ISOL,k=6),data=loyn,
+                na.action=na.fail)   #note to be able to dredge we have to specify na.action=na.fail
+
+dredge(loyn.gam,rank='AICc')
+```
+
+
+```{r}
+data.gp.spatial<-read.csv("data.gp.spatial.csv",strip.white=TRUE)
+head(data.gp.spatial)
+data.gp.spatial.gam<-gam(y~s(long,lat,k=8),data=data.gp.spatial)
+plot(data.gp.spatial.gam)
+```
+
+A lot of gaps in the data
+```{r}
+vis.gam(data.gp.spatial.gam)
+vis.gam(data.gp.spatial.gam,theta=90)
+#change the orientation
+vis.gam(data.gp.spatial.gam,plot.type='contour')
+#Get the three-dimensional surface
+newdata<-expand.grid(long=seq(-0,1,l=100),lat=seq(0,1,l=100))
+pred<-predict(data.gp.spatial.gam,newdata=newdata,se=TRUE)
+vis.gam(data.gp.spatial.gam,se=TRUE)
+
+newdata<-cbind(newdata, git=pred$fit, lower=pred$fit-2*pred$se.fit,upper=pred$fit+2*pred$se.fit, se=pred$se.fit)
+
+```
+```{r}
+g1 <- ggplot(data=newdata, aes(y=lat, x=long))+
+  geom_tile(aes(fill=fit))+
+  geom_contour(aes(z=fit), col='black')+
+  geom_point(data=data.gp.spatial, aes(y=lat, x=long, size=y))+
+  theme_classic()
+g1
+g2<-ggplot(data=newdata, aes(y=lat, x=long))+
+  geom_tile(aes(fill=se))+
+  geom_contour(aes(z=se), col='black')+
+  geom_point(data=data.gp.spatial, aes(y=lat, x=long, size=y))+
+  theme_classic()
+g2
+#Plotting the standard errors
+library(gridExtra)
+grid.arrange(g1, g2, nrow=1)
+g1<-g1+ggtitle('Spatial')
+g2<-g2+ggtitle('SE')
+grid.arrange(g1, g2, nrow=1)
+```
+
+as.date is a useful function for dealing with dates.
+library(lubridate) is also a super useful function for dealing with dates
+
+---
+**Regression Trees**
+
+```{r}
+paruelo<-read.csv("paruelo.csv",strip.white=T)
+head(paruelo)
+```
+
+C3 is the response variable
+
+Interesting note: we don't need to worry abouttransforming to linearity for regression trees as they handle the shape that the data is
+
+```{r}
+paruelo.tree<-tree(C3~LAT+LONG+MAP+MAT+JJAMAP, data=paruelo)
+plot(paruelo.tree)
+text(paruelo.tree, cex=0.75)
+plot(prune.tree(paruelo.tree))
+paruelo.tree1<-prune.tree(paruelo.tree,best=4)
+plot(paruelo.tree1)
+text(paruelo.tree1)
+```
+
+New method
+```{r}
+library(gbm)
+paruelo.gbm<-gbm(C3~LAT+LONG+MAP+MAT+JJAMAP+DJFMAP,
+                 data=paruelo,
+                 distribution='gaussian',
+                 n.trees=10000,
+                 interaction.depth=3,
+                 cv.folds=3,
+                 train.fraction=0.75,
+                 bag.fraction=0.5,
+                 shrinkage=0.001,
+                 n.minobsinnode=2)
+
+(best.iter<-gbm.perf(paruelo.gbm, method="test"))
+
+(best.iter<-gbm.perf(paruelo.gbm, method="OOB"))
+
+(best.iter<-gbm.perf(paruelo.gbm, method="cv")) #this is best method, but does not always work
+
+summary(paruelo.gbm, n.tree=best.iter)
+
+par(mfrow=c(2,3),mar=c(4,5,0,0))
+
+plot(paruelo.gbm,1,n.tree=best.iter)
+plot(paruelo.gbm,2,n.tree=best.iter)
+plot(paruelo.gbm,3,n.tree=best.iter)
+plot(paruelo.gbm,4,n.tree=best.iter)
+plot(paruelo.gbm,5,n.tree=best.iter)
+plot(paruelo.gbm,6,n.tree=best.iter)
+
+
+plot(paruelo.gbm,1,n.tree=best.iter,ylim=c(0.1,0.6))
+plot(paruelo.gbm,2,n.tree=best.iter,ylim=c(0.1,0.6))
+plot(paruelo.gbm,3,n.tree=best.iter,ylim=c(0.1,0.6))
+plot(paruelo.gbm,4,n.tree=best.iter,ylim=c(0.1,0.6))
+plot(paruelo.gbm,5,n.tree=best.iter,ylim=c(0.1,0.6))
+plot(paruelo.gbm,6,n.tree=best.iter,ylim=c(0.1,0.6))
+
+
+pp<-plot(paruelo.gbm, c(2,1), best.iter,
+         return.grid=TRUE)
+par(mfrow=c(1,1))
+library(scatterplot3d)
+scatterplot3d(x=pp$LONG,y=pp$LAT,z=pp$y,angle=24)
+xyz<-with(pp,unique(cbind(x=LONG,y=LAT,z=pp$y)))
+persp(xyz, theta=-60, phi= -10)
+predict(paruelo.gbm, n.tree=best.iter)
+```
+
+GETTING SATELLITE IMAGES
+
+```{r, cache=TRUE}
+library(ggmap)
+ggmap<-get_map(location=c(145, -15), zoom=6, maptype = 'satellite')
+bb<-as.numeric(attr(ggmap, "bb"))
+plot(1,1,xlim=c(bb[2], bb[4]), ylim=c(bb[1], bb[3]))
+rasterImage(ggmap, xleft = bb[2], ybottom = bb [1], xright = bb[4], ytop = bb[3], interpolate= FALSE)
+```
+
+```{r, cache=TRUE}
+library(ggmap)
+ggmap<-get_map(location=c(120, -20), zoom=5, maptype = 'roadmap')
+bb<-as.numeric(attr(ggmap, "bb"))
+plot(1,1,xlim=c(bb[2], bb[4]), ylim=c(bb[1], bb[3]))
+rasterImage(ggmap, xleft = bb[2], ybottom = bb [1], xright = bb[4], ytop = bb[3], interpolate= FALSE)
+```
+
+
+library(oz) is a useful package
+
+
+#END
