@@ -1,6 +1,8 @@
 
 Day 3 - Bayesian
 ==================
+Credit for this script goes to: Murray Logan (main script), and Lotte van Boheemen (edits)
+
 ```{r}
 setwd("~/Documents/Monash/PhD/R/MurrayLoganStatCourse14")
 ```
