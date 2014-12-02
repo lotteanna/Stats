@@ -63,7 +63,7 @@ model {
 "
 ```
 Remember, the inprod(beta[], x[i,]) allows us to accomodate any combination of predictor variables. Well, the inprod(gamma[], z[i,]) similarly allows us to handle the "random" effects (Sites in this case)
-#Note however, that the priors for gamma have what is called a hyperprior (tau.site). Rather than fix the precision to 1.0E-6, we are estimating it...
+Note however, that the priors for gamma have what is called a hyperprior (tau.site). Rather than fix the precision to 1.0E-6, we are estimating it...
 
 BTW, the use of the names like beta and gamma is purely convention, they can be anything- it is traditoinal to associate alll fixed effects parameters with a name 'beta'
 Then to distinguish 'fixed' and 'random' terms in equations (in the methods section of papers), 'random'effects are given a different Greek letter (typically gamma)
