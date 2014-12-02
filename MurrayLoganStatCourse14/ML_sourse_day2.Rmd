@@ -1,6 +1,8 @@
 
 Day 2
 =====================================
+Credit for this script goes to: Murray Logan (main script), and Lotte van Boheemen (edits)
+
 **Linear Hierachical Models**
 
 This is a linear model with separete covariance structure per block, and has fixed and random effects
