@@ -1,5 +1,7 @@
 Day 5 - Multivariate analyses
 ========================================================
+Credit for this script goes to: Murray Logan (main script), and Lotte van Boheemen (edits)
+
 ```{r req_libs, include=FALSE,cache=TRUE}
 library(ggplot2,lib.loc="/Library/Frameworks/R.framework/Versions/3.0/Resources/library")
 library(reshape)
