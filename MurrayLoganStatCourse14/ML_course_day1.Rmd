@@ -1,12 +1,7 @@
 Murray Logan's Stats Course
 ========================================================
-#install.packages(‘knitr’)
-When installing packages in knitr, it is important to set the mirror and location of the library
+Credit for this script goes to: Murray Logan (main script), and Lotte van Boheemen (edits)
 
-```
-install.packages("car", repos="http://cran.ms.unimelb.edu.au/")
-library("car", lib.loc="/Library/Frameworks/R.framework/Versions/3.0/Resources/library")
-```
 > install.packages('ggplot2', repos="http://cran.ms.unimelb.edu.au/")
 > install.packages("gridExtra", repos="http://cran.ms.unimelb.edu.au/")
 > install.packages("MASS",repos="http://cran.ms.unimelb.edu.au/")
