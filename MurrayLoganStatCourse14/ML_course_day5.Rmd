@@ -1,3 +1,11 @@
+http://www.datarobot.com/blog/r-getting-started-with-data-science/
+http://www.ncbi.nlm.nih.gov/pmc/articles/PMC3885826/
+https://www.youtube.com/watch?v=-nai4NBx5zI
+http://www.slideshare.net/mark_landry/gbm-package-in-r
+https://github.com/mlandry22/kaggle/blob/master/GBM_talk_Austin_R_Users_20140724.R
+http://journal.frontiersin.org/Journal/10.3389/fnbot.2013.00021/full
+http://amunategui.github.io/binary-outcome-modeling/
+
 Day 5 - Multivariate analyses
 ========================================================
 Credit for this script goes to: Murray Logan (main script), and Lotte van Boheemen (edits)
